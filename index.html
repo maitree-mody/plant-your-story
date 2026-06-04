@@ -464,9 +464,94 @@
     .plant-part {
       transition: opacity 0.5s ease, transform 0.5s ease;
     }
+  /* ─── Van Gogh Overrides ─────────────────────────────────── */
+
+  body {
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-color: #1a1208;
+  }
+
+  /* Dark overlay */
+  .bg-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.50);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Frosted glass cards */
+  .settings-panel,
+  .oracle-section,
+  .writing-panel,
+  .plant-panel {
+    background: rgba(255, 245, 230, 0.13) !important;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3) !important;
+  }
+
+  .seed-card {
+    background: rgba(212, 168, 67, 0.15) !important;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-left: 4px solid rgba(212, 168, 67, 0.7) !important;
+  }
+
+  /* Light text */
+  h1                   { color: #f5ede0 !important; text-shadow: 0 2px 12px rgba(0,0,0,0.6); }
+  .subtitle            { color: #d4bfa0 !important; text-shadow: 0 1px 6px rgba(0,0,0,0.5); }
+  .section-title       { color: #f0e4cc !important; }
+  .section-title::before { background: rgba(212,168,67,0.8) !important; }
+  .settings-label      { color: #d4bfa0 !important; }
+  .plant-stage-label   { color: #a8c4a8 !important; }
+  .plant-word-count    { color: #c8b89a !important; }
+  .word-count-display  { color: #c8b89a !important; }
+  .word-count-display strong { color: #a8c4a8 !important; }
+  .seed-text           { color: #f5ede0 !important; text-shadow: 0 1px 6px rgba(0,0,0,0.4); }
+  .seed-meta           { color: #c8b89a !important; }
+  footer               { color: #c8b89a !important; }
+
+  /* Inputs dark-transparent */
+  #api-key-input {
+    background: rgba(0,0,0,0.25) !important;
+    border: 1px solid rgba(212,168,67,0.35) !important;
+    color: #f5ede0 !important;
+  }
+  #api-key-input::placeholder { color: rgba(245,237,224,0.3) !important; }
+
+  #mood-input {
+    background: rgba(0,0,0,0.2) !important;
+    border: 1.5px solid rgba(212,168,67,0.35) !important;
+    color: #f5ede0 !important;
+  }
+  #mood-input::placeholder { color: rgba(245,237,224,0.35) !important; opacity: 1 !important; }
+  #mood-input:focus { box-shadow: 0 0 0 3px rgba(212,168,67,0.15) !important; }
+
+  #story-textarea {
+    background: rgba(0,0,0,0.2) !important;
+    border: 1.5px solid rgba(212,168,67,0.3) !important;
+    color: #f5ede0 !important;
+  }
+  #story-textarea::placeholder { color: rgba(245,237,224,0.3) !important; opacity: 1 !important; }
+
+  /* Restart button */
+  .btn-restart {
+    border-color: rgba(255,255,255,0.2) !important;
+    color: #c8b89a !important;
+  }
+  .btn-restart:hover {
+    border-color: var(--blush-deep) !important;
+    color: var(--blush) !important;
+    background: rgba(201,123,132,0.1) !important;
+  }
   </style>
 </head>
 <body>
+<div class="bg-overlay"></div>
 <div class="page-wrap">
 
   <!-- Header -->
@@ -542,6 +627,18 @@
 </div>
 
 <script>
+// ─── Van Gogh Background ─────────────────────────────────────
+const VAN_GOGH_PAINTINGS = [
+  'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg/1280px-Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg',
+  'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Vincent_van_Gogh_-_Wheatfield_with_crows_-_Google_Art_Project.jpg/1280px-Vincent_van_Gogh_-_Wheatfield_with_crows_-_Google_Art_Project.jpg',
+  'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Van_Gogh_-_Almond_Blossom_-_Google_Art_Project.jpg/1280px-Van_Gogh_-_Almond_Blossom_-_Google_Art_Project.jpg',
+  'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Irises-Vincent_van_Gogh.jpg/1280px-Irises-Vincent_van_Gogh.jpg',
+  'https://upload.wikimedia.org/wikipedia/commons/thumb/7/76/Vincent_van_Gogh_-_De_slaapkamer_-_Google_Art_Project.jpg/1280px-Vincent_van_Gogh_-_De_slaapkamer_-_Google_Art_Project.jpg',
+  'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Van_Gogh_Cafe_terrace_at_night_%28Yorck%29.jpg/1024px-Van_Gogh_Cafe_terrace_at_night_%28Yorck%29.jpg',
+];
+document.body.style.backgroundImage =
+  `url('${VAN_GOGH_PAINTINGS[Math.floor(Math.random() * VAN_GOGH_PAINTINGS.length)]}')`;
+
 // ─── State ──────────────────────────────────────────────────
 let apiKey = localStorage.getItem('oracle_api_key') || '';
 let currentSeed = localStorage.getItem('oracle_seed') || '';
