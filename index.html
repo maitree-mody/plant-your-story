@@ -3,67 +3,55 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>tied together</title>
+  <title>Story Oracle</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Lora:ital,wght@0,400;0,500;1,400;1,500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
   <style>
-    /* ─── Reset ───────────────────────────────────────────────── */
+    /* ─── Reset & Base ───────────────────────────────────────── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --cream:        #f0e8d8;
-      --cream-dim:    rgba(240, 232, 216, 0.82);
-      --cream-faint:  rgba(240, 232, 216, 0.55);
-      --glass:        rgba(245, 235, 210, 0.10);
-      --glass-hover:  rgba(245, 235, 210, 0.15);
-      --border:       rgba(255, 255, 255, 0.13);
-      --border-warm:  rgba(220, 190, 140, 0.35);
-      --sage:         #8fb992;
-      --sage-dark:    #5a8a60;
-      --sage-light:   #b8d4b8;
+      --cream:        #f5f0e8;
+      --parchment:    #ede5d4;
+      --warm-white:   #faf7f2;
+      --ink:          #3b2f2f;
+      --ink-light:    #6b5555;
+      --sage:         #7a9e7e;
+      --sage-dark:    #4d7358;
+      --sage-light:   #a8c4a8;
       --blush:        #e8b4b8;
       --blush-deep:   #c97b84;
-      --lavender:     #c4b0e0;
-      --amber:        #d4a843;
-      --amber-dim:    rgba(212, 168, 67, 0.7);
-      --soil:         rgba(90, 62, 34, 1);
-      --gold:         #e0b84a;
-      --shadow:       rgba(0, 0, 0, 0.45);
-      --text-shadow:  0 1px 4px rgba(0,0,0,0.6);
+      --lavender:     #b8a8d4;
+      --lavender-deep:#8870b0;
+      --amber:        #c49a6c;
+      --soil:         #7a5c3a;
+      --soil-dark:    #5a3e22;
+      --gold:         #d4a843;
     }
 
     html { scroll-behavior: smooth; }
 
-    /* ─── Van Gogh Background ────────────────────────────────── */
     body {
-      font-family: 'Lora', serif;
-      color: var(--cream);
+      font-family: 'Inter', sans-serif;
+      background-color: var(--cream);
+      color: var(--ink);
       min-height: 100vh;
       position: relative;
       overflow-x: hidden;
-      background-color: #1a1410;
-      background-size: 120%;
-      background-position: center center;
-      animation: kenBurns 120s ease-in-out infinite alternate;
     }
 
-    @keyframes kenBurns {
-      0%   { background-size: 120%; background-position: 50% 50%; }
-      25%  { background-size: 125%; background-position: 48% 52%; }
-      50%  { background-size: 122%; background-position: 53% 48%; }
-      75%  { background-size: 127%; background-position: 47% 53%; }
-      100% { background-size: 124%; background-position: 52% 50%; }
-    }
-
-    /* ─── Dark Overlay ───────────────────────────────────────── */
+    /* ─── Noise / Paper Texture ──────────────────────────────── */
     body::before {
       content: '';
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.55);
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      background-repeat: repeat;
+      background-size: 200px 200px;
       pointer-events: none;
       z-index: 0;
+      opacity: 0.6;
     }
 
     /* ─── Layout ─────────────────────────────────────────────── */
@@ -72,57 +60,47 @@
       z-index: 1;
       max-width: 900px;
       margin: 0 auto;
-      padding: 2.5rem 1.5rem 5rem;
-    }
-
-    /* ─── Glass Card Base ────────────────────────────────────── */
-    .glass {
-      background: var(--glass);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      border: 1px solid var(--border);
-      border-radius: 18px;
+      padding: 2rem 1.5rem 4rem;
     }
 
     /* ─── Header ─────────────────────────────────────────────── */
     header {
       text-align: center;
       margin-bottom: 2.5rem;
-      padding-top: 1rem;
     }
 
     .header-ornament {
-      font-size: 0.85rem;
-      color: var(--amber-dim);
-      letter-spacing: 0.5em;
-      margin-bottom: 0.75rem;
-      text-shadow: var(--text-shadow);
+      font-size: 1.2rem;
+      color: var(--amber);
+      letter-spacing: 0.3em;
+      margin-bottom: 0.5rem;
+      opacity: 0.8;
     }
 
     h1 {
-      font-family: 'Playfair Display', serif;
-      font-style: italic;
-      font-size: clamp(2.2rem, 5vw, 3.4rem);
+      font-family: 'Lora', serif;
+      font-size: clamp(2rem, 5vw, 3rem);
       font-weight: 600;
-      color: var(--cream);
-      letter-spacing: 0.01em;
+      color: var(--ink);
+      letter-spacing: -0.01em;
       line-height: 1.1;
-      text-shadow: 0 2px 16px rgba(0,0,0,0.7), 0 1px 3px rgba(0,0,0,0.5);
     }
 
     .subtitle {
       font-family: 'Lora', serif;
       font-style: italic;
-      color: var(--cream-faint);
-      margin-top: 0.6rem;
-      font-size: 0.92rem;
-      text-shadow: var(--text-shadow);
+      color: var(--ink-light);
+      margin-top: 0.5rem;
+      font-size: 0.95rem;
     }
 
-    /* ─── Settings Panel ─────────────────────────────────────── */
+    /* ─── API Key Settings ───────────────────────────────────── */
     .settings-panel {
-      padding: 0.85rem 1.2rem;
-      margin-bottom: 1.75rem;
+      background: var(--parchment);
+      border: 1px solid rgba(196, 154, 108, 0.3);
+      border-radius: 12px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 2rem;
       display: flex;
       align-items: center;
       gap: 0.75rem;
@@ -130,77 +108,85 @@
     }
 
     .settings-label {
-      font-size: 0.78rem;
-      font-weight: 400;
-      color: var(--cream-faint);
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--ink-light);
       white-space: nowrap;
       flex-shrink: 0;
-      text-shadow: var(--text-shadow);
-      letter-spacing: 0.02em;
     }
 
-    .key-dot {
+    .settings-label span {
       display: inline-block;
-      width: 7px;
-      height: 7px;
+      width: 8px;
+      height: 8px;
       border-radius: 50%;
-      background: var(--blush-deep);
-      margin-right: 0.45rem;
+      background: var(--sage);
+      margin-right: 0.4rem;
       vertical-align: middle;
-      transition: background 0.3s;
     }
 
-    .key-dot.connected { background: var(--sage); }
+    .settings-label span.red { background: var(--blush-deep); }
 
     #api-key-input {
       flex: 1;
-      min-width: 180px;
-      background: rgba(0,0,0,0.3);
-      border: 1px solid var(--border-warm);
+      min-width: 200px;
+      background: var(--warm-white);
+      border: 1px solid rgba(196, 154, 108, 0.4);
       border-radius: 8px;
-      padding: 0.42rem 0.75rem;
-      font-size: 0.8rem;
-      font-family: 'Lora', monospace;
-      color: var(--cream);
-      letter-spacing: 0.04em;
+      padding: 0.45rem 0.75rem;
+      font-size: 0.82rem;
+      font-family: 'Inter', monospace;
+      color: var(--ink);
+      letter-spacing: 0.05em;
       transition: border-color 0.2s;
     }
 
-    #api-key-input::placeholder { color: rgba(240,232,216,0.3); }
-    #api-key-input:focus { outline: none; border-color: var(--amber-dim); }
+    #api-key-input:focus { outline: none; border-color: var(--amber); }
 
     .btn-save-key {
-      background: rgba(212, 168, 67, 0.25);
-      color: var(--amber);
-      border: 1px solid var(--amber-dim);
+      background: var(--amber);
+      color: white;
+      border: none;
       border-radius: 8px;
-      padding: 0.42rem 1rem;
-      font-size: 0.78rem;
-      font-family: 'Lora', serif;
+      padding: 0.45rem 1rem;
+      font-size: 0.8rem;
+      font-family: 'Inter', sans-serif;
       cursor: pointer;
-      transition: background 0.2s;
+      transition: background 0.2s, transform 0.1s;
       white-space: nowrap;
     }
 
-    .btn-save-key:hover { background: rgba(212, 168, 67, 0.38); }
+    .btn-save-key:hover { background: #b8892f; }
+    .btn-save-key:active { transform: scale(0.97); }
 
     /* ─── Oracle Section ─────────────────────────────────────── */
     .oracle-section {
-      padding: 2rem 2rem 2rem;
-      margin-bottom: 1.75rem;
-      box-shadow: 0 8px 40px rgba(0,0,0,0.4);
+      background: var(--warm-white);
+      border-radius: 20px;
+      padding: 2rem;
+      box-shadow: 0 4px 24px rgba(59, 47, 47, 0.08);
+      margin-bottom: 2rem;
+      border: 1px solid rgba(196, 154, 108, 0.2);
     }
 
     .section-title {
-      font-family: 'Playfair Display', serif;
-      font-style: italic;
-      font-size: 1rem;
-      font-weight: 400;
-      color: var(--cream-faint);
-      margin-bottom: 1.2rem;
-      text-shadow: var(--text-shadow);
-      letter-spacing: 0.06em;
-      text-transform: lowercase;
+      font-family: 'Lora', serif;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--ink);
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .section-title::before {
+      content: '';
+      display: inline-block;
+      width: 18px;
+      height: 2px;
+      background: var(--amber);
+      border-radius: 2px;
     }
 
     .mood-row {
@@ -212,100 +198,90 @@
     #mood-input {
       flex: 1;
       min-width: 200px;
-      background: rgba(0,0,0,0.25);
-      border: 1px solid var(--border-warm);
+      background: var(--cream);
+      border: 1.5px solid rgba(196, 154, 108, 0.35);
       border-radius: 12px;
-      padding: 0.8rem 1.1rem;
-      font-family: 'Playfair Display', serif;
+      padding: 0.75rem 1rem;
+      font-family: 'Lora', serif;
       font-style: italic;
       font-size: 1rem;
-      color: var(--cream);
+      color: var(--ink);
       transition: border-color 0.2s, box-shadow 0.2s;
+      resize: none;
     }
 
-    #mood-input::placeholder { color: rgba(240,232,216,0.3); }
-    #mood-input:focus {
-      outline: none;
-      border-color: var(--amber-dim);
-      box-shadow: 0 0 0 3px rgba(212,168,67,0.1);
-    }
+    #mood-input::placeholder { color: var(--amber); opacity: 0.6; }
+    #mood-input:focus { outline: none; border-color: var(--amber); box-shadow: 0 0 0 3px rgba(212, 168, 67, 0.12); }
 
-    .btn-thread {
-      background: rgba(90, 138, 96, 0.35);
-      color: var(--sage-light);
-      border: 1px solid rgba(143, 185, 146, 0.4);
+    .btn-plant {
+      background: linear-gradient(135deg, var(--sage), var(--sage-dark));
+      color: white;
+      border: none;
       border-radius: 12px;
-      padding: 0.8rem 1.5rem;
-      font-family: 'Playfair Display', serif;
-      font-style: italic;
+      padding: 0.75rem 1.5rem;
+      font-family: 'Lora', serif;
       font-size: 0.95rem;
       cursor: pointer;
-      transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+      transition: transform 0.15s, box-shadow 0.2s;
+      box-shadow: 0 2px 12px rgba(77, 115, 88, 0.3);
       white-space: nowrap;
       align-self: flex-start;
     }
 
-    .btn-thread:hover {
-      background: rgba(90, 138, 96, 0.5);
-      transform: translateY(-1px);
-      box-shadow: 0 4px 18px rgba(0,0,0,0.4);
-    }
-
-    .btn-thread:active { transform: translateY(0); }
-    .btn-thread:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    .btn-plant:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(77, 115, 88, 0.4); }
+    .btn-plant:active { transform: translateY(0); }
+    .btn-plant:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
     /* ─── Seed Card ──────────────────────────────────────────── */
     .seed-card {
       margin-top: 1.5rem;
-      background: rgba(212, 168, 67, 0.08);
-      border-radius: 14px;
+      background: linear-gradient(135deg, var(--parchment), #e8dfc8);
+      border-radius: 16px;
       padding: 1.75rem 2rem;
-      border-left: 3px solid var(--amber-dim);
+      border-left: 4px solid var(--amber);
       position: relative;
       overflow: hidden;
-      animation: fadeSlideIn 0.6s ease;
+      animation: fadeSlideIn 0.5s ease;
     }
 
     .seed-card::before {
       content: '\201C';
       position: absolute;
-      top: -1rem;
+      top: -0.5rem;
       left: 1rem;
-      font-family: 'Playfair Display', serif;
-      font-size: 6rem;
+      font-family: 'Lora', serif;
+      font-size: 5rem;
       color: var(--amber);
-      opacity: 0.12;
+      opacity: 0.2;
       line-height: 1;
       pointer-events: none;
     }
 
     .seed-text {
-      font-family: 'Playfair Display', serif;
+      font-family: 'Lora', serif;
       font-style: italic;
-      font-size: clamp(1.05rem, 2.5vw, 1.25rem);
-      line-height: 1.75;
-      color: var(--cream);
+      font-size: clamp(1rem, 2.5vw, 1.2rem);
+      line-height: 1.7;
+      color: var(--ink);
       position: relative;
       z-index: 1;
-      text-shadow: 0 1px 6px rgba(0,0,0,0.4);
     }
 
     .seed-meta {
-      margin-top: 0.8rem;
-      font-size: 0.72rem;
-      color: var(--cream-faint);
+      margin-top: 0.75rem;
+      font-size: 0.75rem;
+      color: var(--ink-light);
       font-style: italic;
-      opacity: 0.6;
-      letter-spacing: 0.03em;
+      opacity: 0.7;
     }
 
     /* Spinner */
     .spinner {
       display: inline-block;
-      width: 16px; height: 16px;
-      border: 1.5px solid rgba(255,255,255,0.25);
-      border-top-color: var(--sage-light);
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(255,255,255,0.4);
+      border-top-color: white;
       border-radius: 50%;
       animation: spin 0.7s linear infinite;
       vertical-align: middle;
@@ -322,94 +298,96 @@
 
     .writing-grid {
       display: grid;
-      grid-template-columns: 1fr 210px;
+      grid-template-columns: 1fr 220px;
       gap: 1.5rem;
       align-items: start;
     }
 
-    @media (max-width: 620px) {
-      .writing-grid { grid-template-columns: 1fr; }
+    @media (max-width: 600px) {
+      .writing-grid {
+        grid-template-columns: 1fr;
+      }
       .plant-panel { order: -1; }
     }
 
-    /* ─── Writing Panel ──────────────────────────────────────── */
+    /* ─── Textarea ───────────────────────────────────────────── */
     .writing-panel {
-      padding: 1.75rem;
-      box-shadow: 0 8px 40px rgba(0,0,0,0.4);
+      background: var(--warm-white);
+      border-radius: 20px;
+      padding: 2rem;
+      box-shadow: 0 4px 24px rgba(59, 47, 47, 0.08);
+      border: 1px solid rgba(196, 154, 108, 0.2);
     }
 
     .writing-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       margin-bottom: 1rem;
     }
 
     #story-textarea {
       width: 100%;
-      min-height: 300px;
-      background: rgba(0,0,0,0.22);
-      border: 1px solid var(--border-warm);
+      min-height: 280px;
+      background: var(--cream);
+      border: 1.5px solid rgba(196, 154, 108, 0.3);
       border-radius: 12px;
-      padding: 1rem 1.1rem;
+      padding: 1rem;
       font-family: 'Lora', serif;
       font-size: 0.95rem;
-      line-height: 1.85;
-      color: var(--cream);
+      line-height: 1.8;
+      color: var(--ink);
       resize: vertical;
       transition: border-color 0.2s;
     }
 
-    #story-textarea:focus { outline: none; border-color: var(--amber-dim); }
-
-    #story-textarea::placeholder {
-      color: rgba(240,232,216,0.28);
-      font-style: italic;
-    }
+    #story-textarea:focus { outline: none; border-color: var(--amber); }
+    #story-textarea::placeholder { color: var(--ink-light); opacity: 0.5; font-style: italic; }
 
     .word-count-display {
-      margin-top: 0.7rem;
-      font-size: 0.75rem;
-      color: var(--cream-faint);
+      margin-top: 0.75rem;
+      font-size: 0.8rem;
+      color: var(--ink-light);
       text-align: right;
-      opacity: 0.7;
     }
 
-    .word-count-display strong {
-      color: var(--sage-light);
-    }
+    .word-count-display strong { color: var(--sage-dark); font-weight: 600; }
 
     /* ─── Plant Panel ────────────────────────────────────────── */
     .plant-panel {
-      padding: 1.5rem 1rem;
-      box-shadow: 0 8px 40px rgba(0,0,0,0.4);
+      background: var(--warm-white);
+      border-radius: 20px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 24px rgba(59, 47, 47, 0.08);
+      border: 1px solid rgba(196, 154, 108, 0.2);
       text-align: center;
       position: sticky;
       top: 1.5rem;
     }
 
     #plant-svg {
-      width: 150px;
-      height: 190px;
+      width: 160px;
+      height: 200px;
       display: block;
       margin: 0 auto 1rem;
       overflow: visible;
     }
 
     .plant-stage-label {
-      font-family: 'Playfair Display', serif;
+      font-family: 'Lora', serif;
       font-style: italic;
-      font-size: 0.88rem;
-      color: var(--sage-light);
-      margin-bottom: 0.3rem;
-      text-shadow: var(--text-shadow);
+      font-size: 0.9rem;
+      color: var(--sage-dark);
+      margin-bottom: 0.25rem;
     }
 
     .plant-word-count {
-      font-size: 0.72rem;
-      color: var(--cream-faint);
-      opacity: 0.6;
-      font-family: 'Lora', serif;
+      font-size: 0.75rem;
+      color: var(--ink-light);
+      opacity: 0.7;
     }
 
-    /* ─── Restart ────────────────────────────────────────────── */
+    /* ─── Restart Button ─────────────────────────────────────── */
     .restart-row {
       text-align: center;
       margin-top: 1.5rem;
@@ -417,64 +395,74 @@
 
     .btn-restart {
       background: transparent;
-      border: 1px solid rgba(255,255,255,0.15);
-      color: var(--cream-faint);
+      border: 1.5px solid rgba(196, 154, 108, 0.5);
+      color: var(--ink-light);
       border-radius: 10px;
-      padding: 0.55rem 1.3rem;
-      font-family: 'Playfair Display', serif;
+      padding: 0.55rem 1.25rem;
+      font-family: 'Lora', serif;
       font-style: italic;
-      font-size: 0.85rem;
+      font-size: 0.88rem;
       cursor: pointer;
       transition: border-color 0.2s, color 0.2s, background 0.2s;
-      text-shadow: var(--text-shadow);
     }
 
     .btn-restart:hover {
       border-color: var(--blush-deep);
-      color: var(--blush);
-      background: rgba(201, 123, 132, 0.1);
+      color: var(--blush-deep);
+      background: rgba(232, 180, 184, 0.08);
     }
 
     /* ─── Footer ─────────────────────────────────────────────── */
     footer {
       text-align: center;
-      margin-top: 3.5rem;
-      font-size: 0.72rem;
-      color: var(--cream-faint);
-      opacity: 0.4;
+      margin-top: 3rem;
+      font-size: 0.75rem;
+      color: var(--ink-light);
+      opacity: 0.5;
       font-style: italic;
-      text-shadow: var(--text-shadow);
     }
 
     /* ─── Keyframes ──────────────────────────────────────────── */
     @keyframes fadeSlideIn {
-      from { opacity: 0; transform: translateY(14px); }
+      from { opacity: 0; transform: translateY(12px); }
       to   { opacity: 1; transform: translateY(0); }
     }
 
-    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
 
     @keyframes sway {
       0%   { transform: rotate(0deg); }
-      25%  { transform: rotate(1.2deg); }
-      75%  { transform: rotate(-1.2deg); }
+      25%  { transform: rotate(1.5deg); }
+      75%  { transform: rotate(-1.5deg); }
       100% { transform: rotate(0deg); }
     }
 
     @keyframes bloomPop {
       0%   { transform: scale(0); opacity: 0; }
-      70%  { transform: scale(1.12); opacity: 1; }
+      70%  { transform: scale(1.1); opacity: 1; }
       100% { transform: scale(1); opacity: 1; }
     }
 
+    @keyframes petalFade {
+      from { opacity: 0; transform: scale(0.6) rotate(-10deg); }
+      to   { opacity: 1; transform: scale(1) rotate(0deg); }
+    }
+
     .sway-root {
-      transform-origin: 75px 185px;
-      animation: sway 5s ease-in-out infinite;
+      transform-origin: 80px 195px;
+      animation: sway 4s ease-in-out infinite;
     }
 
     .bloom-pop {
       transform-origin: center;
-      animation: bloomPop 0.65s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+      animation: bloomPop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    }
+
+    /* SVG transition helper */
+    .plant-part {
+      transition: opacity 0.5s ease, transform 0.5s ease;
     }
   </style>
 </head>
@@ -483,33 +471,33 @@
 
   <!-- Header -->
   <header>
-    <div class="header-ornament">— ✦ —</div>
-    <h1>tied together</h1>
-    <p class="subtitle">every story is a rope between strangers</p>
+    <div class="header-ornament">✦ ✦ ✦</div>
+    <h1>Story Oracle</h1>
+    <p class="subtitle">plant a seed, let the story grow</p>
   </header>
 
   <!-- API Key Settings -->
-  <div class="settings-panel glass">
-    <div class="settings-label">
-      <span class="key-dot" id="key-dot"></span>Groq API key
+  <div class="settings-panel">
+    <div class="settings-label" id="key-status-label">
+      <span class="red" id="key-dot"></span>Groq API key
     </div>
     <input type="password" id="api-key-input" placeholder="gsk_…" autocomplete="off" />
-    <button class="btn-save-key" onclick="saveApiKey()">save</button>
+    <button class="btn-save-key" onclick="saveApiKey()">Save</button>
   </div>
 
   <!-- Oracle Section -->
-  <div class="oracle-section glass">
-    <div class="section-title">the oracle</div>
+  <div class="oracle-section">
+    <div class="section-title">The Oracle</div>
     <div class="mood-row">
       <input
         id="mood-input"
         type="text"
-        placeholder="what does the air feel like right now…"
+        placeholder="describe your mood or vibe…"
         maxlength="200"
         onkeydown="if(event.key==='Enter') plantSeed()"
       />
-      <button class="btn-thread" id="plant-btn" onclick="plantSeed()">
-        find your thread
+      <button class="btn-plant" id="plant-btn" onclick="plantSeed()">
+        plant a seed
       </button>
     </div>
     <div id="seed-card-container"></div>
@@ -520,13 +508,13 @@
     <div class="writing-grid">
 
       <!-- Textarea Panel -->
-      <div class="writing-panel glass">
+      <div class="writing-panel">
         <div class="writing-header">
-          <div class="section-title" style="margin-bottom:0">start pulling</div>
+          <div class="section-title" style="margin-bottom:0">Your Story</div>
         </div>
         <textarea
           id="story-textarea"
-          placeholder="all these humans need is solace, and all these humans need is connection..."
+          placeholder="Continue from your seed… let the words come."
           oninput="onStoryInput()"
         ></textarea>
         <div class="word-count-display">
@@ -535,43 +523,31 @@
       </div>
 
       <!-- Plant Panel -->
-      <div class="plant-panel glass">
-        <svg id="plant-svg" viewBox="0 0 150 190" xmlns="http://www.w3.org/2000/svg">
+      <div class="plant-panel">
+        <svg id="plant-svg" viewBox="0 0 160 200" xmlns="http://www.w3.org/2000/svg">
+          <!-- Plant drawn programmatically by JS -->
         </svg>
-        <div class="plant-stage-label" id="stage-label">the rope is slack</div>
+        <div class="plant-stage-label" id="stage-label">a seed waiting</div>
         <div class="plant-word-count" id="stage-words">0 / 5 words</div>
       </div>
 
     </div>
 
     <div class="restart-row">
-      <button class="btn-restart" onclick="startOver()">let go &amp; begin again</button>
+      <button class="btn-restart" onclick="startOver()">✦ start over & plant a new seed</button>
     </div>
   </div>
 
-  <footer>for the strangers who become something more</footer>
+  <footer>made with quiet wonder &amp; a little magic</footer>
 </div>
 
 <script>
-// ─── Van Gogh Backgrounds ─────────────────────────────────────
-const VAN_GOGH = [
-  'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg/1280px-Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg',
-  'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Vincent_van_Gogh_-_Wheatfield_with_crows_-_Google_Art_Project.jpg/1280px-Vincent_van_Gogh_-_Wheatfield_with_crows_-_Google_Art_Project.jpg',
-  'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Van_Gogh_-_Almond_Blossom_-_Google_Art_Project.jpg/1280px-Van_Gogh_-_Almond_Blossom_-_Google_Art_Project.jpg',
-  'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Irises-Vincent_van_Gogh.jpg/1280px-Irises-Vincent_van_Gogh.jpg',
-  'https://upload.wikimedia.org/wikipedia/commons/thumb/7/76/Vincent_van_Gogh_-_De_slaapkamer_-_Google_Art_Project.jpg/1280px-Vincent_van_Gogh_-_De_slaapkamer_-_Google_Art_Project.jpg',
-  'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Van_Gogh_Cafe_terrace_at_night_%28Yorck%29.jpg/1024px-Van_Gogh_Cafe_terrace_at_night_%28Yorck%29.jpg',
-];
-
-const chosenPainting = VAN_GOGH[Math.floor(Math.random() * VAN_GOGH.length)];
-document.body.style.backgroundImage = `url('${chosenPainting}')`;
-
-// ─── State ────────────────────────────────────────────────────
+// ─── State ──────────────────────────────────────────────────
 let apiKey = localStorage.getItem('oracle_api_key') || '';
 let currentSeed = localStorage.getItem('oracle_seed') || '';
 let currentStage = -1;
 
-// ─── API Key ──────────────────────────────────────────────────
+// ─── API Key ─────────────────────────────────────────────────
 function saveApiKey() {
   const val = document.getElementById('api-key-input').value.trim();
   if (!val) return;
@@ -583,16 +559,18 @@ function saveApiKey() {
 function updateKeyStatus() {
   const dot = document.getElementById('key-dot');
   if (apiKey && apiKey.length > 10) {
-    dot.classList.add('connected');
+    dot.classList.remove('red');
+    dot.style.background = 'var(--sage)';
   } else {
-    dot.classList.remove('connected');
+    dot.classList.add('red');
+    dot.style.background = 'var(--blush-deep)';
   }
 }
 
-// ─── Oracle ───────────────────────────────────────────────────
+// ─── Oracle: Plant a Seed ─────────────────────────────────────
 async function plantSeed() {
   if (!apiKey) {
-    alert('Add your Groq API key first — it\'s free at console.groq.com');
+    alert('Please enter your Anthropic API key first.');
     document.getElementById('api-key-input').focus();
     return;
   }
@@ -605,7 +583,7 @@ async function plantSeed() {
 
   const btn = document.getElementById('plant-btn');
   btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span>listening…';
+  btn.innerHTML = '<span class="spinner"></span>consulting the oracle…';
 
   const container = document.getElementById('seed-card-container');
   container.innerHTML = '';
@@ -639,29 +617,30 @@ Mood / vibe: "${mood}"`,
 
     const data = await res.json();
     const seedText = data.choices?.[0]?.message?.content?.trim() || '';
-    if (!seedText) throw new Error('The oracle returned silence.');
+
+    if (!seedText) throw new Error('Empty response from oracle.');
 
     currentSeed = seedText;
     localStorage.setItem('oracle_seed', seedText);
-    localStorage.setItem('oracle_mood', mood);
 
     renderSeedCard(seedText, mood);
     showWritingSection();
   } catch (e) {
-    container.innerHTML = `<div class="seed-card" style="border-left-color:rgba(201,123,132,0.6)">
-      <p class="seed-text" style="color:var(--blush);font-size:0.9rem">${escapeHtml(e.message)}</p>
+    container.innerHTML = `<div class="seed-card" style="border-left-color:var(--blush-deep)">
+      <p class="seed-text" style="color:var(--blush-deep)">The oracle is silent: ${e.message}</p>
     </div>`;
   } finally {
     btn.disabled = false;
-    btn.innerHTML = 'find your thread';
+    btn.innerHTML = 'plant a seed';
   }
 }
 
 function renderSeedCard(text, mood) {
-  document.getElementById('seed-card-container').innerHTML = `
+  const container = document.getElementById('seed-card-container');
+  container.innerHTML = `
     <div class="seed-card">
       <p class="seed-text">${escapeHtml(text)}</p>
-      <p class="seed-meta">drawn from: "${escapeHtml(mood)}"</p>
+      <p class="seed-meta">born from: "${escapeHtml(mood)}"</p>
     </div>`;
 }
 
@@ -669,7 +648,7 @@ function renderSeedCard(text, mood) {
 function showWritingSection() {
   const section = document.getElementById('writing-section');
   section.classList.add('visible');
-  setTimeout(() => section.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
+  section.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
   const saved = localStorage.getItem('oracle_story') || '';
   document.getElementById('story-textarea').value = saved;
@@ -688,14 +667,14 @@ function countWords(text) {
   return text.trim() === '' ? 0 : text.trim().split(/\s+/).length;
 }
 
-// ─── Plant / Growth Stages ────────────────────────────────────
+// ─── Plant SVG ────────────────────────────────────────────────
 const STAGES = [
-  { min: 0,   label: 'the rope is slack',    next: 5   },
-  { min: 5,   label: 'a simple bow knot',    next: 20  },
-  { min: 20,  label: 'the knot holds',       next: 50  },
-  { min: 50,  label: 'sailor proof',         next: 100 },
-  { min: 100, label: 'beginning to bloom',   next: 200 },
-  { min: 200, label: 'together',             next: null },
+  { min: 0,   label: 'a seed waiting',   next: 5   },
+  { min: 5,   label: 'a sprout emerges', next: 20  },
+  { min: 20,  label: 'first leaves',     next: 50  },
+  { min: 50,  label: 'growing tall',     next: 100 },
+  { min: 100, label: 'a flower blooms',  next: 200 },
+  { min: 200, label: 'in full bloom',    next: null },
 ];
 
 function getStage(wc) {
@@ -709,123 +688,154 @@ function getStage(wc) {
 
 function updatePlant(wc) {
   const stage = getStage(wc);
-  const info = STAGES[stage];
-  document.getElementById('stage-label').textContent = info.label;
-  document.getElementById('stage-words').textContent = info.next
-    ? `${wc} / ${info.next} words`
-    : `${wc} words`;
+  const stageInfo = STAGES[stage];
+
+  document.getElementById('stage-label').textContent = stageInfo.label;
+  document.getElementById('stage-words').textContent = stageInfo.next
+    ? `${wc} / ${stageInfo.next} words`
+    : `${wc} words — full bloom!`;
+
   if (stage !== currentStage) {
     currentStage = stage;
     drawPlant(stage);
   }
 }
 
-// ─── SVG Plant Drawing ────────────────────────────────────────
 function drawPlant(stage) {
   const svg = document.getElementById('plant-svg');
-  let html = '';
 
-  // Soil — always
-  html += `
-    <ellipse cx="75" cy="182" rx="52" ry="9"  fill="rgba(90,62,34,0.85)"/>
-    <ellipse cx="75" cy="179" rx="44" ry="6"  fill="rgba(90,62,34,0.55)"/>
-    <ellipse cx="75" cy="176" rx="34" ry="3.5" fill="rgba(90,62,34,0.35)"/>
+  // Build SVG content based on stage
+  let content = '';
+
+  // ── Soil (always visible) ──
+  content += `
+    <!-- Soil -->
+    <ellipse cx="80" cy="190" rx="55" ry="10" fill="${soil(0.9)}" />
+    <ellipse cx="80" cy="187" rx="48" ry="7" fill="${soil(0.6)}" />
+    <ellipse cx="80" cy="185" rx="38" ry="4" fill="${soil(0.4)}" />
   `;
 
   if (stage === 0) {
-    html += `
-      <ellipse cx="75" cy="172" rx="8" ry="5.5" fill="#8B6340"/>
-      <ellipse cx="75" cy="171" rx="6" ry="4.5" fill="#A07848"/>
-      <line x1="75" y1="166" x2="75" y2="162" stroke="${sg()}" stroke-width="1.5" stroke-linecap="round"/>
+    // ── Stage 0: Seed ──
+    content += `
+      <!-- Seed -->
+      <ellipse cx="80" cy="180" rx="9" ry="6" fill="#8B6340" />
+      <ellipse cx="80" cy="179" rx="7" ry="5" fill="#A07848" />
+      <line x1="80" y1="174" x2="80" y2="170" stroke="${sage()}" stroke-width="1.5" stroke-linecap="round"/>
     `;
   }
 
   if (stage >= 1) {
-    const h = stage === 1 ? 28 : 75 + (stage - 1) * 14;
-    const top = 176 - h;
-    html += `
-      <path d="M75,176 Q73,${176 - h * 0.4} 75,${top}"
-        stroke="${sgd()}" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    // ── Stage 1+: Sprout stem ──
+    const stemH = stage === 1 ? 30 : 80 + (stage - 1) * 15;
+    const stemTop = 185 - stemH;
+    content += `
+      <!-- Main stem -->
+      <path d="M80,185 Q78,${185 - stemH * 0.4} 80,${stemTop}"
+        stroke="${sageD()}" stroke-width="2.5" fill="none" stroke-linecap="round"/>
     `;
   }
 
   if (stage === 1) {
-    html += `
-      <ellipse cx="67" cy="153" rx="9" ry="5" fill="${sgl()}" transform="rotate(-28,67,153)"/>
-      <ellipse cx="83" cy="153" rx="9" ry="5" fill="${sgl()}" transform="rotate(28,83,153)"/>
+    // ── Stage 1: Tiny sprout with 2 seed leaves ──
+    content += `
+      <ellipse cx="72" cy="160" rx="9" ry="5" fill="${sageL()}" transform="rotate(-25,72,160)"/>
+      <ellipse cx="88" cy="160" rx="9" ry="5" fill="${sageL()}" transform="rotate(25,88,160)"/>
     `;
   }
 
   if (stage >= 2) {
-    html += `
-      <path d="M73,148 Q50,138 47,123 Q58,131 73,141" fill="${sg()}" opacity="0.9"/>
-      <path d="M77,143 Q100,133 103,118 Q93,126 77,136" fill="${sg()}" opacity="0.9"/>
+    // ── Stage 2+: Leaves ──
+    // Left leaf set 1
+    content += `
+      <path d="M78,155 Q55,145 52,130 Q62,138 78,148" fill="${sage()}" opacity="0.9"/>
+      <path d="M82,150 Q105,140 108,125 Q98,133 82,143" fill="${sage()}" opacity="0.9"/>
     `;
   }
 
   if (stage >= 3) {
-    html += `
-      <path d="M73,118 Q50,105 46,91 Q57,101 73,111" fill="${sgd()}" opacity="0.85"/>
-      <path d="M77,113 Q100,100 104,86 Q93,96 77,106" fill="${sgd()}" opacity="0.85"/>
-      <path d="M74,134 Q63,122 61,111 Q68,119 75,128" fill="${sg()}" opacity="0.7"/>
+    // ── Stage 3+: More leaves higher up ──
+    content += `
+      <path d="M78,125 Q55,112 50,98 Q62,108 79,118" fill="${sageD()}" opacity="0.85"/>
+      <path d="M82,120 Q105,107 110,93 Q98,103 81,113" fill="${sageD()}" opacity="0.85"/>
+      <!-- Small leaf mid -->
+      <path d="M79,140 Q68,128 66,118 Q73,126 80,134" fill="${sage()}" opacity="0.7"/>
     `;
   }
 
   if (stage >= 4) {
-    html += flower(75, 88, 17, 'var(--blush)', 'var(--gold)', true);
+    // ── Stage 4: First flower at top ──
+    const fx = 80, fy = 95;
+    content += flowerSVG(fx, fy, 18, 'var(--blush)', 'var(--gold)', true);
   }
 
   if (stage >= 5) {
-    html += `
-      <path d="M73,133 Q50,118 43,103" stroke="${sgd()}" stroke-width="2" fill="none" stroke-linecap="round"/>
-      <path d="M77,123 Q100,108 107,93"  stroke="${sgd()}" stroke-width="2" fill="none" stroke-linecap="round"/>
-      <path d="M59,121 Q43,111 40,99 Q51,107 60,115" fill="${sg()}" opacity="0.8"/>
-      <path d="M90,111 Q106,101 110,89 Q99,97 89,105" fill="${sg()}" opacity="0.8"/>
+    // ── Stage 5: Full bloom — side branches + extra flowers ──
+    // Left branch
+    content += `
+      <path d="M78,140 Q55,125 48,110" stroke="${sageD()}" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <path d="M82,130 Q105,115 112,100" stroke="${sageD()}" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <!-- Extra leaves on branches -->
+      <path d="M64,128 Q48,118 45,106 Q56,114 65,122" fill="${sage()}" opacity="0.8"/>
+      <path d="M95,118 Q111,108 115,96 Q104,104 94,112" fill="${sage()}" opacity="0.8"/>
     `;
-    html += flower(43, 101, 13, 'var(--lavender)', 'var(--amber)', true);
-    html += flower(107, 91, 13, 'var(--blush)',    'var(--gold)',  true);
-    html += bud(56, 143, sg());
-    html += bud(94, 138, sgl());
+    // Side flowers
+    content += flowerSVG(48, 108, 14, 'var(--lavender)', 'var(--amber)', true);
+    content += flowerSVG(112, 98, 14, 'var(--blush)', 'var(--gold)', true);
+    // Small buds
+    content += bud(60, 150, sage());
+    content += bud(100, 145, sageL());
   }
 
+  // Wrap in sway group for stage 5
   if (stage >= 5) {
-    svg.innerHTML = `<g class="sway-root">${html}</g>`;
+    svg.innerHTML = `<g class="sway-root">${content}</g>`;
   } else {
-    svg.innerHTML = html;
+    svg.innerHTML = content;
   }
 }
 
-function flower(cx, cy, r, petalCol, centCol, anim) {
-  let s = `<g${anim ? ' class="bloom-pop"' : ''} style="transform-origin:${cx}px ${cy}px">`;
-  for (let i = 0; i < 5; i++) {
-    const a = (i / 5) * 360;
-    const rad = a * Math.PI / 180;
-    const px = (cx + Math.cos(rad) * r * 0.9).toFixed(1);
-    const py = (cy + Math.sin(rad) * r * 0.9).toFixed(1);
-    s += `<ellipse cx="${px}" cy="${py}" rx="${(r*.55).toFixed(1)}" ry="${(r*.34).toFixed(1)}"
-      fill="${petalCol}" opacity="0.88" transform="rotate(${a},${px},${py})"/>`;
+function flowerSVG(cx, cy, r, petalColor, centerColor, animate) {
+  const petals = 5;
+  let s = '';
+  const animClass = animate ? ' class="bloom-pop"' : '';
+  s += `<g${animClass} style="transform-origin:${cx}px ${cy}px">`;
+
+  for (let i = 0; i < petals; i++) {
+    const angle = (i / petals) * 360;
+    const rad = angle * Math.PI / 180;
+    const px = cx + Math.cos(rad) * r * 0.9;
+    const py = cy + Math.sin(rad) * r * 0.9;
+    s += `<ellipse cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" rx="${(r * 0.55).toFixed(1)}" ry="${(r * 0.35).toFixed(1)}"
+      fill="${petalColor}" opacity="0.88"
+      transform="rotate(${angle},${px.toFixed(1)},${py.toFixed(1)})"/>`;
   }
-  s += `<circle cx="${cx}" cy="${cy}" r="${(r*.38).toFixed(1)}" fill="${centCol}" opacity="0.95"/>`;
-  s += `<circle cx="${cx}" cy="${cy}" r="${(r*.17).toFixed(1)}" fill="white" opacity="0.55"/>`;
+  // Center
+  s += `<circle cx="${cx}" cy="${cy}" r="${(r * 0.38).toFixed(1)}" fill="${centerColor}" opacity="0.95"/>`;
+  // Center dot
+  s += `<circle cx="${cx}" cy="${cy}" r="${(r * 0.18).toFixed(1)}" fill="white" opacity="0.6"/>`;
   s += `</g>`;
   return s;
 }
 
-function bud(cx, cy, col) {
-  return `<ellipse cx="${cx}" cy="${cy}" rx="3.5" ry="5.5" fill="${col}" opacity="0.7"/>
-    <line x1="${cx}" y1="${cy+5.5}" x2="${cx}" y2="${cy+11}" stroke="${sgd()}" stroke-width="1.5" stroke-linecap="round"/>`;
+function bud(cx, cy, color) {
+  return `<ellipse cx="${cx}" cy="${cy}" rx="4" ry="6" fill="${color}" opacity="0.7"/>
+    <line x1="${cx}" y1="${cy + 6}" x2="${cx}" y2="${cy + 12}" stroke="${sageD()}" stroke-width="1.5" stroke-linecap="round"/>`;
 }
 
-function sg()  { return '#8fb992'; }
-function sgd() { return '#5a8a60'; }
-function sgl() { return '#b8d4b8'; }
+// Color helpers
+function sage()  { return '#7a9e7e'; }
+function sageD() { return '#4d7358'; }
+function sageL() { return '#b4ceb4'; }
+function soil(o) {
+  return `rgba(90, 62, 34, ${o})`;
+}
 
 // ─── Start Over ───────────────────────────────────────────────
 function startOver() {
-  if (!confirm('Let go of this story and begin again?')) return;
+  if (!confirm('Clear your story and start fresh?')) return;
   localStorage.removeItem('oracle_seed');
   localStorage.removeItem('oracle_story');
-  localStorage.removeItem('oracle_mood');
   currentSeed = '';
   currentStage = -1;
   document.getElementById('mood-input').value = '';
@@ -833,34 +843,35 @@ function startOver() {
   document.getElementById('story-textarea').value = '';
   document.getElementById('writing-section').classList.remove('visible');
   document.getElementById('wc-num').textContent = '0';
-  // Pick a new painting
-  const next = VAN_GOGH[Math.floor(Math.random() * VAN_GOGH.length)];
-  document.body.style.backgroundImage = `url('${next}')`;
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 // ─── Utils ────────────────────────────────────────────────────
-function escapeHtml(s) {
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+function escapeHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 // ─── Init ─────────────────────────────────────────────────────
 (function init() {
+  // Restore API key
   if (apiKey) {
     document.getElementById('api-key-input').value = apiKey;
     updateKeyStatus();
   }
-  const savedMood = localStorage.getItem('oracle_mood') || '';
-  if (savedMood) document.getElementById('mood-input').value = savedMood;
-  document.getElementById('mood-input').addEventListener('input', function() {
-    localStorage.setItem('oracle_mood', this.value);
-  });
+
+  // Restore seed card
   if (currentSeed) {
+    const savedMood = localStorage.getItem('oracle_mood') || '';
     renderSeedCard(currentSeed, savedMood);
     showWritingSection();
   }
-  // Draw seed stage on load
-  drawPlant(0);
+
+  // Save mood on input for restore
+  document.getElementById('mood-input').addEventListener('input', function () {
+    localStorage.setItem('oracle_mood', this.value);
+  });
+  const savedMood = localStorage.getItem('oracle_mood') || '';
+  if (savedMood) document.getElementById('mood-input').value = savedMood;
 })();
 </script>
 </body>
