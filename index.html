@@ -58,51 +58,28 @@
     .page-wrap {
       position: relative;
       z-index: 1;
-      max-width: 1100px;
+      max-width: 900px;
       margin: 0 auto;
-      padding: 1.5rem 1.5rem 2rem;
-    }
-
-    /* Two-column layout once writing is active */
-    .app-layout {
-      display: block;
-    }
-
-    .app-layout.writing-active {
-      display: grid;
-      grid-template-columns: 340px 1fr;
-      gap: 1.25rem;
-      align-items: start;
-    }
-
-    .app-layout.writing-active .oracle-section {
-      position: sticky;
-      top: 1rem;
-    }
-
-    @media (max-width: 780px) {
-      .app-layout.writing-active {
-        grid-template-columns: 1fr;
-      }
+      padding: 2rem 1.5rem 4rem;
     }
 
     /* ─── Header ─────────────────────────────────────────────── */
     header {
       text-align: center;
-      margin-bottom: 1.25rem;
+      margin-bottom: 2.5rem;
     }
 
     .header-ornament {
-      font-size: 1rem;
+      font-size: 1.2rem;
       color: var(--amber);
       letter-spacing: 0.3em;
-      margin-bottom: 0.3rem;
+      margin-bottom: 0.5rem;
       opacity: 0.8;
     }
 
     h1 {
       font-family: 'Lora', serif;
-      font-size: clamp(1.6rem, 4vw, 2.4rem);
+      font-size: clamp(2rem, 5vw, 3rem);
       font-weight: 600;
       color: var(--ink);
       letter-spacing: -0.01em;
@@ -113,8 +90,8 @@
       font-family: 'Lora', serif;
       font-style: italic;
       color: var(--ink-light);
-      margin-top: 0.3rem;
-      font-size: 0.88rem;
+      margin-top: 0.5rem;
+      font-size: 0.95rem;
     }
 
     /* ─── API Key Settings ───────────────────────────────────── */
@@ -122,8 +99,8 @@
       background: var(--parchment);
       border: 1px solid rgba(196, 154, 108, 0.3);
       border-radius: 12px;
-      padding: 0.7rem 1.25rem;
-      margin-bottom: 1rem;
+      padding: 1rem 1.25rem;
+      margin-bottom: 2rem;
       display: flex;
       align-items: center;
       gap: 0.75rem;
@@ -186,9 +163,9 @@
     .oracle-section {
       background: var(--warm-white);
       border-radius: 20px;
-      padding: 1.5rem;
+      padding: 2rem;
       box-shadow: 0 4px 24px rgba(59, 47, 47, 0.08);
-      margin-bottom: 0;
+      margin-bottom: 2rem;
       border: 1px solid rgba(196, 154, 108, 0.2);
     }
 
@@ -351,7 +328,7 @@
 
     #story-textarea {
       width: 100%;
-      min-height: 220px;
+      min-height: 280px;
       background: var(--cream);
       border: 1.5px solid rgba(196, 154, 108, 0.3);
       border-radius: 12px;
@@ -608,7 +585,6 @@
     <button class="btn-save-key" onclick="saveApiKey()">Save</button>
   </div>
 
-  <div class="app-layout" id="app-layout">
   <!-- Oracle Section -->
   <div class="oracle-section">
     <div class="section-title">The Oracle</div>
@@ -662,8 +638,6 @@
       <button class="btn-restart" onclick="startOver()">✦ start over & plant a new seed</button>
     </div>
   </div>
-  </div><!-- end app-layout -->
-
   <footer>made with quiet wonder &amp; a little magic</footer>
 </div>
 
@@ -786,8 +760,7 @@ function renderSeedCard(text, mood) {
 function showWritingSection() {
   const section = document.getElementById('writing-section');
   section.classList.add('visible');
-  document.getElementById('app-layout').classList.add('writing-active');
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  section.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
   const saved = localStorage.getItem('oracle_story') || '';
   document.getElementById('story-textarea').value = saved;
@@ -1008,7 +981,6 @@ function startOver() {
   document.getElementById('seed-card-container').innerHTML = '';
   document.getElementById('story-textarea').value = '';
   document.getElementById('writing-section').classList.remove('visible');
-  document.getElementById('app-layout').classList.remove('writing-active');
   document.getElementById('wc-num').textContent = '0';
   // Reset nudge
   clearTimeout(nudgeTimeout);
