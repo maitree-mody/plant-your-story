@@ -1476,88 +1476,88 @@ function makeLFO(ctx, freq, depth) {
 function buildRain(ctx) {
   const buf = makeNoiseBuf(ctx, 4);
 
-  // Main rain body — lowpass filtered white noise
-  const src  = noiseSrc(ctx, buf);
-  const lpf  = ctx.createBiquadFilter();
-  lpf.type = 'lowpass'; lpf.frequency.value = 1300; lpf.Q.value = 0.7;
-  const gMain = ctx.createGain();
-  gMain.gain.value = 0.65;
-  src.connect(lpf); lpf.connect(gMain); gMain.connect(masterGain);
-  src.start();
-  soundNodes.push(src);
+  // Core rain hiss — bandpass in the bright mid zone (distinctly "wet")
+  const src1 = noiseSrc(ctx, buf);
+  const hpf1 = ctx.createBiquadFilter();
+  hpf1.type = 'highpass'; hpf1.frequency.value = 500;
+  const lpf1 = ctx.createBiquadFilter();
+  lpf1.type = 'lowpass'; lpf1.frequency.value = 4000;
+  const g1 = ctx.createGain(); g1.gain.value = 0.65;
+  src1.connect(hpf1); hpf1.connect(lpf1); lpf1.connect(g1); g1.connect(masterGain);
+  src1.start(); soundNodes.push(src1);
+  makeLFO(ctx, 0.05, 0.12).connect(g1.gain);
 
-  // Slow intensity swell
-  makeLFO(ctx, 0.04, 0.14).connect(gMain.gain);
-
-  // High-frequency drizzle shimmer
+  // High shimmer — drizzle hitting leaves/glass
   const src2 = noiseSrc(ctx, buf);
-  const hpf  = ctx.createBiquadFilter();
-  hpf.type = 'highpass'; hpf.frequency.value = 5500;
-  const gHigh = ctx.createGain();
-  gHigh.gain.value = 0.07;
-  src2.connect(hpf); hpf.connect(gHigh); gHigh.connect(masterGain);
-  src2.start();
-  soundNodes.push(src2);
+  const hpf2 = ctx.createBiquadFilter();
+  hpf2.type = 'highpass'; hpf2.frequency.value = 7000;
+  const g2 = ctx.createGain(); g2.gain.value = 0.18;
+  src2.connect(hpf2); hpf2.connect(g2); g2.connect(masterGain);
+  src2.start(); soundNodes.push(src2);
+
+  // Low thud — heavy drops hitting ground
+  const src3 = noiseSrc(ctx, buf);
+  const lpf3 = ctx.createBiquadFilter();
+  lpf3.type = 'lowpass'; lpf3.frequency.value = 220;
+  const g3 = ctx.createGain(); g3.gain.value = 0.28;
+  src3.connect(lpf3); lpf3.connect(g3); g3.connect(masterGain);
+  src3.start(); soundNodes.push(src3);
 }
 
 // ─── Forest ───────────────────────────────────────────────────
 function buildForest(ctx) {
   const buf = makeNoiseBuf(ctx, 3);
 
-  // Wind — bandlimited noise
+  // Deep wind — very low, dark, clearly not rain
   const wind = noiseSrc(ctx, buf);
   const lpf  = ctx.createBiquadFilter();
-  lpf.type = 'lowpass'; lpf.frequency.value = 650;
-  const hpf  = ctx.createBiquadFilter();
-  hpf.type = 'highpass'; hpf.frequency.value = 55;
-  const gWind = ctx.createGain();
-  gWind.gain.value = 0.38;
-  wind.connect(lpf); lpf.connect(hpf); hpf.connect(gWind); gWind.connect(masterGain);
-  wind.start();
-  soundNodes.push(wind);
-  makeLFO(ctx, 0.07, 0.18).connect(gWind.gain);
+  lpf.type = 'lowpass'; lpf.frequency.value = 320;
+  const gWind = ctx.createGain(); gWind.gain.value = 0.55;
+  wind.connect(lpf); lpf.connect(gWind); gWind.connect(masterGain);
+  wind.start(); soundNodes.push(wind);
+  // Deep slow gust — much stronger modulation than rain
+  makeLFO(ctx, 0.06, 0.35).connect(gWind.gain);
 
-  // Leaf rustle — high bandpass shimmer
+  // Leaf rustle — mid-high, amplitude-modulated faster than the wind
   const rustle = noiseSrc(ctx, buf);
   const bpf    = ctx.createBiquadFilter();
-  bpf.type = 'bandpass'; bpf.frequency.value = 3800; bpf.Q.value = 0.9;
-  const gRustle = ctx.createGain();
-  gRustle.gain.value = 0.11;
+  bpf.type = 'bandpass'; bpf.frequency.value = 1800; bpf.Q.value = 0.6;
+  const gRustle = ctx.createGain(); gRustle.gain.value = 0.22;
   rustle.connect(bpf); bpf.connect(gRustle); gRustle.connect(masterGain);
-  rustle.start();
-  soundNodes.push(rustle);
+  rustle.start(); soundNodes.push(rustle);
+  makeLFO(ctx, 0.18, 0.12).connect(gRustle.gain);
 
   scheduleBird(ctx);
 }
 
 function scheduleBird(ctx) {
   if (activeSound !== 'forest') return;
-  const delay = 2800 + Math.random() * 5500;
+  const delay = 1800 + Math.random() * 4000;
   soundTimers.push(setTimeout(() => {
     if (activeSound === 'forest') { chirp(ctx); scheduleBird(ctx); }
   }, delay));
 }
 
 function chirp(ctx) {
-  const notes = 1 + Math.floor(Math.random() * 3);
+  const notes = 1 + Math.floor(Math.random() * 4);
   for (let i = 0; i < notes; i++) {
     setTimeout(() => {
       if (activeSound !== 'forest') return;
       const osc = ctx.createOscillator();
       osc.type = 'sine';
-      const f0  = 2600 + Math.random() * 1800;
-      const f1  = f0 * (0.78 + Math.random() * 0.44);
-      const dur = 0.07 + Math.random() * 0.11;
+      const f0  = 2200 + Math.random() * 2000;
+      const f1  = f0 * (0.75 + Math.random() * 0.5);
+      const dur = 0.06 + Math.random() * 0.13;
       const t   = ctx.currentTime;
       osc.frequency.setValueAtTime(f0, t);
       osc.frequency.linearRampToValueAtTime(f1, t + dur);
       const g = ctx.createGain();
       g.gain.setValueAtTime(0, t);
-      g.gain.linearRampToValueAtTime(0.055 + Math.random() * 0.035, t + 0.01);
+      g.gain.linearRampToValueAtTime(0.13 + Math.random() * 0.07, t + 0.01);
       g.gain.linearRampToValueAtTime(0, t + dur);
       osc.connect(g); g.connect(masterGain);
       osc.start(t); osc.stop(t + dur + 0.05);
-    }, i * (100 + Math.random() * 160));
+    }, i * (90 + Math.random() * 180));
   }
 }
 
@@ -1565,23 +1565,25 @@ function chirp(ctx) {
 function buildCafe(ctx) {
   const buf = makeNoiseBuf(ctx, 3);
 
-  // Crowd murmur — stacked bandpass layers simulating voice frequencies
-  [[300, 2.5, 0.24], [750, 1.8, 0.17], [1500, 2.2, 0.09]].forEach(([freq, Q, gain]) => {
+  // Voice formants — high-Q bandpass so each layer resonates like a vowel.
+  // Each has its own slow LFO at a different rate, creating the "wah-wah"
+  // quality of overlapping conversations rather than flat noise.
+  [[380, 9, 0.20], [900, 7, 0.16], [2400, 5, 0.09]].forEach(([freq, Q, gain]) => {
     const src = noiseSrc(ctx, buf);
     const f   = ctx.createBiquadFilter();
     f.type = 'bandpass'; f.frequency.value = freq; f.Q.value = Q;
-    const g = ctx.createGain();
-    g.gain.value = gain;
+    const g = ctx.createGain(); g.gain.value = gain;
     src.connect(f); f.connect(g); g.connect(masterGain);
     src.start(); soundNodes.push(src);
+    // Different LFO rate per formant layer — makes it sound like separate voices
+    makeLFO(ctx, 0.15 + Math.random() * 0.25, gain * 0.5).connect(g.gain);
   });
 
-  // Low room rumble
+  // Boxy indoor rumble — HVAC / room resonance, very sub-bass
   const rumble = noiseSrc(ctx, buf);
   const lpf    = ctx.createBiquadFilter();
-  lpf.type = 'lowpass'; lpf.frequency.value = 105;
-  const gRumble = ctx.createGain();
-  gRumble.gain.value = 0.26;
+  lpf.type = 'lowpass'; lpf.frequency.value = 80;
+  const gRumble = ctx.createGain(); gRumble.gain.value = 0.38;
   rumble.connect(lpf); lpf.connect(gRumble); gRumble.connect(masterGain);
   rumble.start(); soundNodes.push(rumble);
 
@@ -1590,25 +1592,24 @@ function buildCafe(ctx) {
 
 function scheduleClink(ctx) {
   if (activeSound !== 'cafe') return;
-  const delay = 4500 + Math.random() * 8000;
+  const delay = 3000 + Math.random() * 6000;
   soundTimers.push(setTimeout(() => {
     if (activeSound === 'cafe') { clink(ctx); scheduleClink(ctx); }
   }, delay));
 }
 
 function clink(ctx) {
-  const base = 1900 + Math.random() * 1100;
-  // Three harmonic partials with slight delay stagger for realism
-  [[base, 0], [base * 1.48, 30], [base * 2.12, 55]].forEach(([freq, msDelay]) => {
+  const base = 1800 + Math.random() * 1200;
+  [[base, 0], [base * 1.48, 25], [base * 2.1, 50]].forEach(([freq, msDelay]) => {
     setTimeout(() => {
       if (activeSound !== 'cafe') return;
       const osc = ctx.createOscillator();
       osc.type = 'sine';
       osc.frequency.value = freq;
-      const dur = 0.28 + Math.random() * 0.25;
+      const dur = 0.3 + Math.random() * 0.3;
       const t   = ctx.currentTime;
       const g   = ctx.createGain();
-      g.gain.setValueAtTime(0.038, t);
+      g.gain.setValueAtTime(0.09, t);
       g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
       osc.connect(g); g.connect(masterGain);
       osc.start(t); osc.stop(t + dur + 0.05);
