@@ -538,6 +538,73 @@
   }
   #story-textarea::placeholder { color: rgba(245,237,224,0.3) !important; opacity: 1 !important; }
 
+  /* ─── 5-Minute Timer ────────────────────────────────────── */
+  .timer-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+    min-height: 28px;
+  }
+
+  .btn-five-min {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.18);
+    color: #c8b89a;
+    border-radius: 8px;
+    padding: 0.3rem 0.85rem;
+    font-family: 'Lora', serif;
+    font-style: italic;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s, background 0.2s;
+    white-space: nowrap;
+  }
+
+  .btn-five-min:hover {
+    border-color: rgba(168,196,168,0.5);
+    color: #a8c4a8;
+    background: rgba(122,158,126,0.08);
+  }
+
+  .timer-display {
+    font-family: 'Lora', serif;
+    font-size: 0.85rem;
+    color: #a8c4a8;
+    letter-spacing: 0.08em;
+    display: none;
+  }
+
+  .timer-display.visible { display: inline; }
+
+  .timer-done {
+    font-family: 'Lora', serif;
+    font-style: italic;
+    font-size: 0.82rem;
+    color: #c8b89a;
+    display: none;
+    opacity: 0;
+    transition: opacity 0.8s ease;
+  }
+
+  .timer-done.visible { display: inline; }
+  .timer-done.shown   { opacity: 1; }
+
+  /* ─── Nudge ──────────────────────────────────────────────── */
+  .story-nudge {
+    margin-top: 0.6rem;
+    font-family: 'Lora', serif;
+    font-style: italic;
+    font-size: 0.8rem;
+    color: #c8b89a;
+    opacity: 0;
+    transition: opacity 1.2s ease;
+    min-height: 1.2em;
+    pointer-events: none;
+  }
+
+  .story-nudge.visible { opacity: 1; }
+
   /* Restart button */
   .btn-restart {
     border-color: rgba(255,255,255,0.2) !important;
@@ -597,6 +664,11 @@
         <div class="writing-header">
           <div class="section-title" style="margin-bottom:0">Your Story</div>
         </div>
+        <div class="timer-row">
+          <button class="btn-five-min" id="btn-five-min" onclick="toggleTimer()">just 5 minutes</button>
+          <span class="timer-display" id="timer-display">5:00</span>
+          <span class="timer-done" id="timer-done">you did it. that's enough for today.</span>
+        </div>
         <textarea
           id="story-textarea"
           placeholder="Continue from your seed… let the words come."
@@ -605,6 +677,7 @@
         <div class="word-count-display">
           <strong id="wc-num">0</strong> words
         </div>
+        <div class="story-nudge" id="story-nudge"></div>
       </div>
 
       <!-- Plant Panel -->
@@ -758,6 +831,7 @@ function onStoryInput() {
   const wc = countWords(text);
   document.getElementById('wc-num').textContent = wc;
   updatePlant(wc);
+  scheduleNudge();
 }
 
 function countWords(text) {
@@ -928,6 +1002,73 @@ function soil(o) {
   return `rgba(90, 62, 34, ${o})`;
 }
 
+// ─── 5-Minute Timer ──────────────────────────────────────────
+let timerInterval = null;
+let timerSeconds = 300;
+
+function toggleTimer() {
+  if (timerInterval) return; // already running, ignore
+  timerSeconds = 300;
+  const btn       = document.getElementById('btn-five-min');
+  const display   = document.getElementById('timer-display');
+  const done      = document.getElementById('timer-done');
+
+  // Reset done message in case it was showing
+  done.classList.remove('visible', 'shown');
+  btn.style.display = 'none';
+  display.classList.add('visible');
+  display.textContent = '5:00';
+
+  timerInterval = setInterval(() => {
+    timerSeconds--;
+    const m = Math.floor(timerSeconds / 60);
+    const s = timerSeconds % 60;
+    display.textContent = `${m}:${s.toString().padStart(2, '0')}`;
+
+    if (timerSeconds <= 0) {
+      clearInterval(timerInterval);
+      timerInterval = null;
+      display.classList.remove('visible');
+      done.classList.add('visible');
+      requestAnimationFrame(() => requestAnimationFrame(() => done.classList.add('shown')));
+      // After 6s, reset so user can start again
+      setTimeout(() => {
+        done.classList.remove('shown');
+        setTimeout(() => {
+          done.classList.remove('visible');
+          btn.style.display = '';
+        }, 900);
+      }, 6000);
+    }
+  }, 1000);
+}
+
+// ─── Story Nudge ─────────────────────────────────────────────
+const NUDGES = [
+  'what does the room smell like?',
+  'someone knocks on the door.',
+  'what are they afraid to say?',
+  'the light changes.',
+  'what do their hands look like?',
+  'a sound in the distance.',
+  'what are they pretending not to notice?',
+];
+
+let nudgeTimeout = null;
+
+function scheduleNudge() {
+  clearTimeout(nudgeTimeout);
+  // Hide nudge immediately when typing
+  const nudge = document.getElementById('story-nudge');
+  nudge.classList.remove('visible');
+
+  nudgeTimeout = setTimeout(() => {
+    const nudge = document.getElementById('story-nudge');
+    nudge.textContent = NUDGES[Math.floor(Math.random() * NUDGES.length)];
+    nudge.classList.add('visible');
+  }, 120000); // 2 minutes
+}
+
 // ─── Start Over ───────────────────────────────────────────────
 function startOver() {
   if (!confirm('Clear your story and start fresh?')) return;
@@ -940,6 +1081,14 @@ function startOver() {
   document.getElementById('story-textarea').value = '';
   document.getElementById('writing-section').classList.remove('visible');
   document.getElementById('wc-num').textContent = '0';
+  // Reset timer
+  clearInterval(timerInterval); timerInterval = null;
+  document.getElementById('btn-five-min').style.display = '';
+  document.getElementById('timer-display').classList.remove('visible');
+  document.getElementById('timer-done').classList.remove('visible','shown');
+  // Reset nudge
+  clearTimeout(nudgeTimeout);
+  document.getElementById('story-nudge').classList.remove('visible');
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
