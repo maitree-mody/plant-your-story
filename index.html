@@ -959,6 +959,20 @@ function soil(o) {
 }
 
 
+// ─── Canvas text wrap helper ─────────────────────────────────
+function wrapText(ctx, text, maxWidth) {
+  const words = text.split(' ');
+  const lines = [];
+  let line = '';
+  for (const w of words) {
+    const test = line ? line + ' ' + w : w;
+    if (ctx.measureText(test).width > maxWidth && line) { lines.push(line); line = w; }
+    else line = test;
+  }
+  if (line) lines.push(line);
+  return lines;
+}
+
 // ─── Save as Image ───────────────────────────────────────────
 async function saveAsImage() {
   const btn = document.querySelector('.btn-seed-action');
@@ -988,44 +1002,75 @@ async function saveAsImage() {
     ctx.fillStyle = 'rgba(0,0,0,0.55)';
     ctx.fillRect(0, 0, W, H);
 
-    // Seed text — word-wrap centered
     const mood = localStorage.getItem('oracle_mood') || '';
-    const seedFontSize = 38;
+    const story = document.getElementById('story-textarea').value.trim();
+    const maxW = W * 0.72;
+    const padX = W / 2;
+
+    ctx.textAlign = 'center';
+    ctx.shadowColor = 'rgba(0,0,0,0.7)';
+
+    // ── Seed line (italic, larger) ──
+    const seedFontSize = story ? 28 : 38;
     ctx.font = `italic ${seedFontSize}px Georgia, serif`;
     ctx.fillStyle = '#f5ede0';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.shadowColor = 'rgba(0,0,0,0.7)';
-    ctx.shadowBlur = 16;
+    ctx.textBaseline = 'top';
+    ctx.shadowBlur = 14;
 
-    const maxW = W * 0.72;
-    const words = currentSeed.split(' ');
-    const lines = [];
-    let line = '';
-    for (const w of words) {
-      const test = line ? line + ' ' + w : w;
-      if (ctx.measureText(test).width > maxW && line) { lines.push(line); line = w; }
-      else line = test;
+    const seedLines = wrapText(ctx, currentSeed, maxW);
+    const seedLH = seedFontSize * 1.65;
+
+    // ── Story text (smaller, not italic) ──
+    const storyFontSize = 19;
+    ctx.font = `${storyFontSize}px Georgia, serif`;
+    const storyLines = story ? wrapText(ctx, story, maxW) : [];
+    const storyLH = storyFontSize * 1.7;
+
+    // Total block height
+    const dividerH = story ? 28 : 0;
+    const moodH = mood ? 30 : 0;
+    const totalH = seedLines.length * seedLH + dividerH + storyLines.length * storyLH + moodH;
+
+    let y = H / 2 - totalH / 2;
+
+    // Draw seed lines
+    ctx.font = `italic ${seedFontSize}px Georgia, serif`;
+    ctx.fillStyle = '#f5ede0';
+    ctx.shadowBlur = 14;
+    seedLines.forEach(l => { ctx.fillText(l, padX, y); y += seedLH; });
+
+    // Divider rule between seed and story
+    if (story) {
+      y += 10;
+      ctx.shadowBlur = 0;
+      ctx.strokeStyle = 'rgba(245,237,224,0.2)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(W / 2 - 60, y);
+      ctx.lineTo(W / 2 + 60, y);
+      ctx.stroke();
+      y += 18;
+
+      // Draw story lines
+      ctx.font = `${storyFontSize}px Georgia, serif`;
+      ctx.fillStyle = 'rgba(245,237,224,0.88)';
+      ctx.shadowBlur = 8;
+      storyLines.forEach(l => { ctx.fillText(l, padX, y); y += storyLH; });
     }
-    if (line) lines.push(line);
-
-    const lh = seedFontSize * 1.65;
-    const blockH = lines.length * lh;
-    const startY = H / 2 - blockH / 2 - (mood ? 24 : 0);
-    lines.forEach((l, i) => ctx.fillText(l, W / 2, startY + i * lh + lh / 2));
 
     // "born from" line
     if (mood) {
-      ctx.shadowBlur = 8;
-      ctx.font = `italic 20px Georgia, serif`;
-      ctx.fillStyle = 'rgba(245,237,224,0.55)';
-      ctx.fillText(`born from: "${mood}"`, W / 2, startY + blockH + 36);
+      y += 8;
+      ctx.shadowBlur = 6;
+      ctx.font = `italic 17px Georgia, serif`;
+      ctx.fillStyle = 'rgba(245,237,224,0.45)';
+      ctx.fillText(`born from: "${mood}"`, padX, y);
     }
 
     // Watermark
     ctx.shadowBlur = 4;
-    ctx.font = `15px Georgia, serif`;
-    ctx.fillStyle = 'rgba(245,237,224,0.4)';
+    ctx.font = `14px Georgia, serif`;
+    ctx.fillStyle = 'rgba(245,237,224,0.38)';
     ctx.textAlign = 'right';
     ctx.textBaseline = 'bottom';
     ctx.fillText('the greenhouse', W - 32, H - 28);
