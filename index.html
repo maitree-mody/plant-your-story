@@ -729,6 +729,10 @@
       <div class="writing-panel">
         <div class="writing-header">
           <div class="section-title" style="margin-bottom:0">Your Story</div>
+          <div class="seed-actions" style="margin-top:0">
+            <button class="btn-seed-action" onclick="exportTxt()">save .txt</button>
+            <button class="btn-seed-action" onclick="exportPdf()">save .pdf</button>
+          </div>
         </div>
         <textarea
           id="story-textarea"
@@ -1237,6 +1241,76 @@ async function saveAsImage() {
     btn.textContent = orig;
     btn.disabled = false;
   }
+}
+
+// ─── Export ───────────────────────────────────────────────────
+function exportTxt() {
+  const story = document.getElementById('story-textarea').value;
+  if (!currentSeed && !story.trim()) return;
+
+  const mood = localStorage.getItem('oracle_mood') || '';
+  const date = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+  const line = '─'.repeat(40);
+
+  let out = `The Greenhouse\n${line}\n`;
+  if (mood) out += `mood: ${mood}\n`;
+  out += `date: ${date}\n${line}\n\n`;
+  if (currentSeed) out += `${currentSeed}\n\n`;
+  out += story;
+  out += `\n\n${line}\nwritten in the greenhouse`;
+
+  const blob = new Blob([out], { type: 'text/plain; charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `greenhouse-${Date.now()}.txt`;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
+function exportPdf() {
+  const story = document.getElementById('story-textarea').value;
+  if (!currentSeed && !story.trim()) return;
+
+  const mood = localStorage.getItem('oracle_mood') || '';
+  const date = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+
+  const win = window.open('', '_blank');
+  if (!win) { alert('Please allow pop-ups to save as PDF.'); return; }
+
+  const seedHtml  = currentSeed ? `<div class="seed">${escapeHtml(currentSeed)}</div>` : '';
+  const moodHtml  = mood ? `born from: &ldquo;${escapeHtml(mood)}&rdquo; &nbsp;&middot;&nbsp; ` : '';
+  const storyHtml = escapeHtml(story);
+
+  win.document.write(`<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>The Greenhouse</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+  <style>
+    @page { margin: 2.5cm 3cm; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Lora', Georgia, serif; color: #2a1f1f; line-height: 1.85; font-size: 11pt; }
+    header { text-align: center; margin-bottom: 2.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid #d4b896; }
+    h1 { font-size: 1.6rem; font-weight: 600; color: #1a0f0f; margin-bottom: 0.3rem; }
+    .meta { font-size: 0.78rem; color: #8b6a6a; font-style: italic; }
+    .seed { font-style: italic; font-size: 1.1rem; border-left: 3px solid #c49a6c; padding-left: 1.2rem; margin: 0 0 2rem; color: #3b2f2f; line-height: 1.7; }
+    .story { white-space: pre-wrap; }
+    footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #d4b896; font-size: 0.7rem; color: #b09080; font-style: italic; text-align: right; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>The Greenhouse</h1>
+    <div class="meta">${moodHtml}${date}</div>
+  </header>
+  ${seedHtml}
+  <div class="story">${storyHtml}</div>
+  <footer>written in the greenhouse</footer>
+  <script>document.fonts.ready.then(() => window.print());<\/script>
+</body>
+</html>`);
+  win.document.close();
 }
 
 // ─── Copy Seed ────────────────────────────────────────────────
