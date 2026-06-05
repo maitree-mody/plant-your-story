@@ -538,6 +538,33 @@
   }
   #story-textarea::placeholder { color: rgba(245,237,224,0.3) !important; opacity: 1 !important; }
 
+  /* ─── Share Buttons ─────────────────────────────────────── */
+  .seed-actions {
+    display: flex;
+    gap: 0.6rem;
+    margin-top: 1rem;
+  }
+
+  .btn-seed-action {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.18);
+    color: #c8b89a;
+    border-radius: 8px;
+    padding: 0.3rem 0.85rem;
+    font-family: 'Lora', serif;
+    font-style: italic;
+    font-size: 0.78rem;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s, color 0.2s;
+    white-space: nowrap;
+  }
+
+  .btn-seed-action:hover {
+    background: rgba(255,255,255,0.13);
+    border-color: rgba(245,237,224,0.35);
+    color: #f0e4cc;
+  }
+
   /* Restart button */
   .btn-restart {
     border-color: rgba(255,255,255,0.2) !important;
@@ -635,8 +662,8 @@ const VAN_GOGH_PAINTINGS = [
   'https://upload.wikimedia.org/wikipedia/commons/thumb/7/76/Vincent_van_Gogh_-_De_slaapkamer_-_Google_Art_Project.jpg/1280px-Vincent_van_Gogh_-_De_slaapkamer_-_Google_Art_Project.jpg',
   'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Van_Gogh_Cafe_terrace_at_night_%28Yorck%29.jpg/1024px-Van_Gogh_Cafe_terrace_at_night_%28Yorck%29.jpg',
 ];
-document.body.style.backgroundImage =
-  `url('${VAN_GOGH_PAINTINGS[Math.floor(Math.random() * VAN_GOGH_PAINTINGS.length)]}')`;
+const currentPainting = VAN_GOGH_PAINTINGS[Math.floor(Math.random() * VAN_GOGH_PAINTINGS.length)];
+document.body.style.backgroundImage = `url('${currentPainting}')`;
 
 // ─── State ──────────────────────────────────────────────────
 let apiKey = localStorage.getItem('oracle_api_key') || '';
@@ -737,6 +764,10 @@ function renderSeedCard(text, mood) {
     <div class="seed-card">
       <p class="seed-text">${escapeHtml(text)}</p>
       <p class="seed-meta">born from: "${escapeHtml(mood)}"</p>
+    </div>
+    <div class="seed-actions">
+      <button class="btn-seed-action" onclick="saveAsImage()">save as image</button>
+      <button class="btn-seed-action" id="btn-copy-seed" onclick="copySeed()">copy seed</button>
     </div>`;
 }
 
@@ -927,6 +958,102 @@ function soil(o) {
   return `rgba(90, 62, 34, ${o})`;
 }
 
+
+// ─── Save as Image ───────────────────────────────────────────
+async function saveAsImage() {
+  const btn = document.querySelector('.btn-seed-action');
+  const orig = btn.textContent;
+  btn.textContent = 'generating…';
+  btn.disabled = true;
+
+  try {
+    const W = 1200, H = 675;
+    const canvas = document.createElement('canvas');
+    canvas.width = W; canvas.height = H;
+    const ctx = canvas.getContext('2d');
+
+    // Load Van Gogh painting
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.src = currentPainting;
+    await new Promise((res, rej) => { img.onload = res; img.onerror = rej; });
+
+    // Draw painting cover-fit
+    const scale = Math.max(W / img.width, H / img.height);
+    const ix = (W - img.width * scale) / 2;
+    const iy = (H - img.height * scale) / 2;
+    ctx.drawImage(img, ix, iy, img.width * scale, img.height * scale);
+
+    // Dark overlay
+    ctx.fillStyle = 'rgba(0,0,0,0.55)';
+    ctx.fillRect(0, 0, W, H);
+
+    // Seed text — word-wrap centered
+    const mood = localStorage.getItem('oracle_mood') || '';
+    const seedFontSize = 38;
+    ctx.font = `italic ${seedFontSize}px Georgia, serif`;
+    ctx.fillStyle = '#f5ede0';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.shadowColor = 'rgba(0,0,0,0.7)';
+    ctx.shadowBlur = 16;
+
+    const maxW = W * 0.72;
+    const words = currentSeed.split(' ');
+    const lines = [];
+    let line = '';
+    for (const w of words) {
+      const test = line ? line + ' ' + w : w;
+      if (ctx.measureText(test).width > maxW && line) { lines.push(line); line = w; }
+      else line = test;
+    }
+    if (line) lines.push(line);
+
+    const lh = seedFontSize * 1.65;
+    const blockH = lines.length * lh;
+    const startY = H / 2 - blockH / 2 - (mood ? 24 : 0);
+    lines.forEach((l, i) => ctx.fillText(l, W / 2, startY + i * lh + lh / 2));
+
+    // "born from" line
+    if (mood) {
+      ctx.shadowBlur = 8;
+      ctx.font = `italic 20px Georgia, serif`;
+      ctx.fillStyle = 'rgba(245,237,224,0.55)';
+      ctx.fillText(`born from: "${mood}"`, W / 2, startY + blockH + 36);
+    }
+
+    // Watermark
+    ctx.shadowBlur = 4;
+    ctx.font = `15px Georgia, serif`;
+    ctx.fillStyle = 'rgba(245,237,224,0.4)';
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'bottom';
+    ctx.fillText('the greenhouse', W - 32, H - 28);
+
+    // Download
+    const a = document.createElement('a');
+    a.download = 'my-seed.png';
+    a.href = canvas.toDataURL('image/png');
+    a.click();
+  } catch (e) {
+    alert('Could not generate image: ' + e.message);
+  } finally {
+    btn.textContent = orig;
+    btn.disabled = false;
+  }
+}
+
+// ─── Copy Seed ────────────────────────────────────────────────
+async function copySeed() {
+  const btn = document.getElementById('btn-copy-seed');
+  try {
+    await navigator.clipboard.writeText(currentSeed);
+    btn.textContent = 'copied ✓';
+    setTimeout(() => { btn.textContent = 'copy seed'; }, 2000);
+  } catch (e) {
+    btn.textContent = 'copy seed';
+  }
+}
 
 // ─── Start Over ───────────────────────────────────────────────
 function startOver() {
