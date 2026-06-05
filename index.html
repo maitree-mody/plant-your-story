@@ -1,3 +1,20 @@
+<!--
+  ╔══════════════════════════════════════════════════════════════╗
+  ║  THE GREENHOUSE — plant-your-story                          ║
+  ║                                                              ║
+  ║  A single-page creative writing app. The user describes     ║
+  ║  their mood; the Groq API (llama-3.3-70b) generates a       ║
+  ║  poetic opening line ("seed"). As the user writes their      ║
+  ║  story in the textarea, a living SVG plant grows through     ║
+  ║  6 stages tied to word count (0 → 5 → 20 → 50 → 100 → 200).║
+  ║  The background is a randomly chosen Van Gogh painting.     ║
+  ║  State (API key, seed, story, mood) persists in             ║
+  ║  localStorage so sessions survive page refreshes.           ║
+  ║                                                              ║
+  ║  Stack: plain HTML/CSS/JS — no build step, no dependencies. ║
+  ║  API:   Groq (OpenAI-compatible endpoint).                  ║
+  ╚══════════════════════════════════════════════════════════════╝
+-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -575,6 +592,95 @@
     color: var(--blush) !important;
     background: rgba(201,123,132,0.1) !important;
   }
+
+  /* ─── Sound Controls ─────────────────────────────────────── */
+  .sound-controls {
+    margin-top: 1.25rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255,255,255,0.1);
+  }
+  .sound-label {
+    font-family: 'Lora', serif;
+    font-style: italic;
+    font-size: 0.75rem;
+    color: rgba(200,184,154,0.65);
+    margin-bottom: 0.6rem;
+    letter-spacing: 0.06em;
+  }
+  .sound-btns {
+    display: flex;
+    gap: 0.35rem;
+    justify-content: center;
+    margin-bottom: 0.7rem;
+  }
+  .btn-sound {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.14);
+    color: rgba(200,184,154,0.8);
+    border-radius: 8px;
+    padding: 0.28rem 0.6rem;
+    font-family: 'Lora', serif;
+    font-style: italic;
+    font-size: 0.74rem;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s, color 0.2s;
+    white-space: nowrap;
+  }
+  .btn-sound:hover {
+    background: rgba(255,255,255,0.12);
+    border-color: rgba(245,237,224,0.28);
+    color: #f0e4cc;
+  }
+  .btn-sound.active {
+    background: rgba(122,158,126,0.22);
+    border-color: rgba(122,158,126,0.55);
+    color: #a8c4a8;
+  }
+  .sound-volume {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    justify-content: center;
+  }
+  .btn-mute {
+    background: none;
+    border: 1px solid rgba(255,255,255,0.12);
+    color: rgba(200,184,154,0.65);
+    border-radius: 6px;
+    padding: 0.18rem 0.45rem;
+    font-size: 0.7rem;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    transition: background 0.2s, color 0.2s;
+    white-space: nowrap;
+  }
+  .btn-mute:hover { background: rgba(255,255,255,0.08); color: #f0e4cc; }
+  #vol-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 72px;
+    height: 3px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+  }
+  #vol-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: rgba(212,168,67,0.8);
+    cursor: pointer;
+  }
+  #vol-slider::-moz-range-thumb {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: rgba(212,168,67,0.8);
+    cursor: pointer;
+    border: none;
+  }
   </style>
 </head>
 <body>
@@ -641,6 +747,18 @@
         </svg>
         <div class="plant-stage-label" id="stage-label">a seed waiting</div>
         <div class="plant-word-count" id="stage-words">0 / 5 words</div>
+        <div class="sound-controls">
+          <div class="sound-label">ambient</div>
+          <div class="sound-btns">
+            <button class="btn-sound" id="snd-rain"   onclick="toggleSound('rain')">rain</button>
+            <button class="btn-sound" id="snd-forest" onclick="toggleSound('forest')">forest</button>
+            <button class="btn-sound" id="snd-cafe"   onclick="toggleSound('cafe')">café</button>
+          </div>
+          <div class="sound-volume">
+            <button class="btn-mute" id="btn-mute" onclick="toggleMute()">♪ on</button>
+            <input type="range" id="vol-slider" min="0" max="100" value="60" oninput="setVolume(this.value)" />
+          </div>
+        </div>
       </div>
 
     </div>
@@ -654,6 +772,8 @@
 
 <script>
 // ─── Van Gogh Background ─────────────────────────────────────
+// Pick one painting at random each page load and set it as the body background.
+// The dark overlay div (.bg-overlay) sits on top so text stays readable.
 const VAN_GOGH_PAINTINGS = [
   'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg/1280px-Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg',
   'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Vincent_van_Gogh_-_Wheatfield_with_crows_-_Google_Art_Project.jpg/1280px-Vincent_van_Gogh_-_Wheatfield_with_crows_-_Google_Art_Project.jpg',
@@ -666,11 +786,16 @@ const currentPainting = VAN_GOGH_PAINTINGS[Math.floor(Math.random() * VAN_GOGH_P
 document.body.style.backgroundImage = `url('${currentPainting}')`;
 
 // ─── State ──────────────────────────────────────────────────
+// apiKey     — Groq API key entered by the user, persisted in localStorage
+// currentSeed — the AI-generated opening line currently displayed
+// currentStage — tracks which plant stage is drawn so we only redraw on change
 let apiKey = localStorage.getItem('oracle_api_key') || '';
 let currentSeed = localStorage.getItem('oracle_seed') || '';
 let currentStage = -1;
 
 // ─── API Key ─────────────────────────────────────────────────
+// Saves the key to localStorage and updates the status dot (green = valid, red = missing).
+// The key is never sent anywhere except directly to Groq.
 function saveApiKey() {
   const val = document.getElementById('api-key-input').value.trim();
   if (!val) return;
@@ -691,6 +816,10 @@ function updateKeyStatus() {
 }
 
 // ─── Oracle: Plant a Seed ─────────────────────────────────────
+// Calls the Groq chat completions endpoint (OpenAI-compatible) with the user's
+// mood string. The model returns a single poetic opening line ("seed").
+// On success: renders the seed card and reveals the writing section.
+// On failure: shows the error inline inside a styled seed card.
 async function plantSeed() {
   if (!apiKey) {
     alert('Please enter your Anthropic API key first.');
@@ -772,6 +901,8 @@ function renderSeedCard(text, mood) {
 }
 
 // ─── Writing Section ──────────────────────────────────────────
+// Reveals the textarea + plant panel, restores any previously saved story
+// from localStorage, and scrolls smoothly into view.
 function showWritingSection() {
   const section = document.getElementById('writing-section');
   section.classList.add('visible');
@@ -782,6 +913,7 @@ function showWritingSection() {
   updatePlant(countWords(saved));
 }
 
+// Fires on every keystroke: persists the story and triggers plant growth.
 function onStoryInput() {
   const text = document.getElementById('story-textarea').value;
   localStorage.setItem('oracle_story', text);
@@ -795,6 +927,8 @@ function countWords(text) {
 }
 
 // ─── Plant SVG ────────────────────────────────────────────────
+// The plant grows through 6 stages keyed to word-count milestones.
+// STAGES drives both the sidebar label and the "X / Y words" progress line.
 const STAGES = [
   { min: 0,   label: 'a seed waiting',   next: 5   },
   { min: 5,   label: 'a sprout emerges', next: 20  },
@@ -813,6 +947,8 @@ function getStage(wc) {
   return 0;
 }
 
+// Updates the label + progress counter, then redraws the SVG only when the
+// stage actually changes (avoids unnecessary DOM writes on every keystroke).
 function updatePlant(wc) {
   const stage = getStage(wc);
   const stageInfo = STAGES[stage];
@@ -828,10 +964,13 @@ function updatePlant(wc) {
   }
 }
 
+// Imperatively builds the plant SVG string for the given stage and injects it.
+// Each stage is additive — higher stages include all lower-stage elements plus
+// new ones (branches, extra leaves, flowers). Stage 5 wraps everything in a
+// sway group so the whole plant gently rocks via CSS animation.
 function drawPlant(stage) {
   const svg = document.getElementById('plant-svg');
 
-  // Build SVG content based on stage
   let content = '';
 
   // ── Soil (always visible) ──
@@ -853,7 +992,7 @@ function drawPlant(stage) {
   }
 
   if (stage >= 1) {
-    // ── Stage 1+: Sprout stem ──
+    // Stem height scales with stage so the plant visibly stretches as it matures.
     const stemH = stage === 1 ? 30 : 80 + (stage - 1) * 15;
     const stemTop = 185 - stemH;
     content += `
@@ -922,6 +1061,9 @@ function drawPlant(stage) {
   }
 }
 
+// Draws a 5-petal flower centered at (cx, cy) with radius r.
+// Each petal is an ellipse rotated to face outward from the center.
+// The bloom-pop CSS class triggers a scale-in animation when first rendered.
 function flowerSVG(cx, cy, r, petalColor, centerColor, animate) {
   const petals = 5;
   let s = '';
@@ -931,6 +1073,7 @@ function flowerSVG(cx, cy, r, petalColor, centerColor, animate) {
   for (let i = 0; i < petals; i++) {
     const angle = (i / petals) * 360;
     const rad = angle * Math.PI / 180;
+    // Place each petal slightly offset from center, then rotate it to point outward.
     const px = cx + Math.cos(rad) * r * 0.9;
     const py = cy + Math.sin(rad) * r * 0.9;
     s += `<ellipse cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" rx="${(r * 0.55).toFixed(1)}" ry="${(r * 0.35).toFixed(1)}"
@@ -974,6 +1117,14 @@ function wrapText(ctx, text, maxWidth) {
 }
 
 // ─── Save as Image ───────────────────────────────────────────
+// Renders the seed card as a 1200×675 PNG using the Canvas API:
+//   1. Draws the current Van Gogh painting as a cover-fit background.
+//   2. Applies a dark overlay for legibility.
+//   3. Word-wraps and centers the seed text in italic serif.
+//   4. Optionally adds the "born from:" mood line and a watermark.
+//   5. Triggers a download via a temporary <a> element.
+// Uses crossOrigin = 'anonymous' on the image so Canvas doesn't get tainted
+// by the external Wikipedia image URLs.
 async function saveAsImage() {
   const btn = document.querySelector('.btn-seed-action');
   const orig = btn.textContent;
@@ -1089,6 +1240,7 @@ async function saveAsImage() {
 }
 
 // ─── Copy Seed ────────────────────────────────────────────────
+// Writes the current seed text to the clipboard and briefly flashes "copied ✓".
 async function copySeed() {
   const btn = document.getElementById('btn-copy-seed');
   try {
@@ -1101,6 +1253,8 @@ async function copySeed() {
 }
 
 // ─── Start Over ───────────────────────────────────────────────
+// Clears all localStorage entries for this session and resets the UI to its
+// initial empty state, ready for a new mood and seed.
 function startOver() {
   if (!confirm('Clear your story and start fresh?')) return;
   localStorage.removeItem('oracle_seed');
@@ -1116,11 +1270,15 @@ function startOver() {
 }
 
 // ─── Utils ────────────────────────────────────────────────────
+// Escapes user-supplied strings before inserting them into innerHTML to prevent XSS.
 function escapeHtml(str) {
   return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 // ─── Init ─────────────────────────────────────────────────────
+// Runs on page load. Restores persisted state so the user can pick up exactly
+// where they left off: API key status, last seed card, last story draft, and
+// the mood text they typed. Also wires up the mood input → localStorage sync.
 (function init() {
   // Restore API key
   if (apiKey) {
@@ -1142,6 +1300,254 @@ function escapeHtml(str) {
   const savedMood = localStorage.getItem('oracle_mood') || '';
   if (savedMood) document.getElementById('mood-input').value = savedMood;
 })();
+
+// ─── Ambient Sound Engine ─────────────────────────────────────
+let audioCtx    = null;
+let masterGain  = null;
+let activeSound = null;  // 'rain' | 'forest' | 'cafe' | null
+let isMuted     = false;
+let soundNodes  = [];    // stoppable AudioNodes (sources + oscillators)
+let soundTimers = [];    // setTimeout IDs for bird/clink scheduling
+
+function ensureCtx() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    masterGain = audioCtx.createGain();
+    masterGain.gain.value = 0.6;
+    masterGain.connect(audioCtx.destination);
+  }
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+
+function stopAll() {
+  soundTimers.forEach(id => clearTimeout(id));
+  soundTimers = [];
+  soundNodes.forEach(n => { try { n.stop(); } catch (_) {} });
+  soundNodes = [];
+}
+
+function toggleSound(name) {
+  ensureCtx();
+  if (activeSound === name) {
+    stopAll();
+    activeSound = null;
+  } else {
+    stopAll();
+    activeSound = name;
+    if (name === 'rain')   buildRain(audioCtx);
+    if (name === 'forest') buildForest(audioCtx);
+    if (name === 'cafe')   buildCafe(audioCtx);
+  }
+  updateSoundUI();
+}
+
+function toggleMute() {
+  isMuted = !isMuted;
+  if (masterGain) {
+    masterGain.gain.setTargetAtTime(
+      isMuted ? 0 : volValue(),
+      audioCtx.currentTime, 0.1
+    );
+  }
+  document.getElementById('btn-mute').textContent = isMuted ? '♪ off' : '♪ on';
+}
+
+function setVolume(val) {
+  if (!masterGain || isMuted) return;
+  masterGain.gain.setTargetAtTime(val / 100, audioCtx.currentTime, 0.05);
+}
+
+function volValue() {
+  return (document.getElementById('vol-slider')?.value ?? 60) / 100;
+}
+
+function updateSoundUI() {
+  ['rain', 'forest', 'cafe'].forEach(name => {
+    const btn = document.getElementById(`snd-${name}`);
+    if (btn) btn.classList.toggle('active', activeSound === name);
+  });
+}
+
+// Creates a looping white-noise buffer source
+function makeNoiseBuf(ctx, seconds = 3) {
+  const len = ctx.sampleRate * seconds;
+  const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+  const d   = buf.getChannelData(0);
+  for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+  return buf;
+}
+
+function noiseSrc(ctx, buf) {
+  const src = ctx.createBufferSource();
+  src.buffer = buf;
+  src.loop   = true;
+  return src;
+}
+
+// Returns a GainNode driven by a slow LFO; connect its output to any AudioParam
+function makeLFO(ctx, freq, depth) {
+  const osc = ctx.createOscillator();
+  osc.type = 'sine';
+  osc.frequency.value = freq;
+  const g = ctx.createGain();
+  g.gain.value = depth;
+  osc.connect(g);
+  osc.start();
+  soundNodes.push(osc);
+  return g;
+}
+
+// ─── Rain ─────────────────────────────────────────────────────
+function buildRain(ctx) {
+  const buf = makeNoiseBuf(ctx, 4);
+
+  // Main rain body — lowpass filtered white noise
+  const src  = noiseSrc(ctx, buf);
+  const lpf  = ctx.createBiquadFilter();
+  lpf.type = 'lowpass'; lpf.frequency.value = 1300; lpf.Q.value = 0.7;
+  const gMain = ctx.createGain();
+  gMain.gain.value = 0.65;
+  src.connect(lpf); lpf.connect(gMain); gMain.connect(masterGain);
+  src.start();
+  soundNodes.push(src);
+
+  // Slow intensity swell
+  makeLFO(ctx, 0.04, 0.14).connect(gMain.gain);
+
+  // High-frequency drizzle shimmer
+  const src2 = noiseSrc(ctx, buf);
+  const hpf  = ctx.createBiquadFilter();
+  hpf.type = 'highpass'; hpf.frequency.value = 5500;
+  const gHigh = ctx.createGain();
+  gHigh.gain.value = 0.07;
+  src2.connect(hpf); hpf.connect(gHigh); gHigh.connect(masterGain);
+  src2.start();
+  soundNodes.push(src2);
+}
+
+// ─── Forest ───────────────────────────────────────────────────
+function buildForest(ctx) {
+  const buf = makeNoiseBuf(ctx, 3);
+
+  // Wind — bandlimited noise
+  const wind = noiseSrc(ctx, buf);
+  const lpf  = ctx.createBiquadFilter();
+  lpf.type = 'lowpass'; lpf.frequency.value = 650;
+  const hpf  = ctx.createBiquadFilter();
+  hpf.type = 'highpass'; hpf.frequency.value = 55;
+  const gWind = ctx.createGain();
+  gWind.gain.value = 0.38;
+  wind.connect(lpf); lpf.connect(hpf); hpf.connect(gWind); gWind.connect(masterGain);
+  wind.start();
+  soundNodes.push(wind);
+  makeLFO(ctx, 0.07, 0.18).connect(gWind.gain);
+
+  // Leaf rustle — high bandpass shimmer
+  const rustle = noiseSrc(ctx, buf);
+  const bpf    = ctx.createBiquadFilter();
+  bpf.type = 'bandpass'; bpf.frequency.value = 3800; bpf.Q.value = 0.9;
+  const gRustle = ctx.createGain();
+  gRustle.gain.value = 0.11;
+  rustle.connect(bpf); bpf.connect(gRustle); gRustle.connect(masterGain);
+  rustle.start();
+  soundNodes.push(rustle);
+
+  scheduleBird(ctx);
+}
+
+function scheduleBird(ctx) {
+  if (activeSound !== 'forest') return;
+  const delay = 2800 + Math.random() * 5500;
+  soundTimers.push(setTimeout(() => {
+    if (activeSound === 'forest') { chirp(ctx); scheduleBird(ctx); }
+  }, delay));
+}
+
+function chirp(ctx) {
+  const notes = 1 + Math.floor(Math.random() * 3);
+  for (let i = 0; i < notes; i++) {
+    setTimeout(() => {
+      if (activeSound !== 'forest') return;
+      const osc = ctx.createOscillator();
+      osc.type = 'sine';
+      const f0  = 2600 + Math.random() * 1800;
+      const f1  = f0 * (0.78 + Math.random() * 0.44);
+      const dur = 0.07 + Math.random() * 0.11;
+      const t   = ctx.currentTime;
+      osc.frequency.setValueAtTime(f0, t);
+      osc.frequency.linearRampToValueAtTime(f1, t + dur);
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0, t);
+      g.gain.linearRampToValueAtTime(0.055 + Math.random() * 0.035, t + 0.01);
+      g.gain.linearRampToValueAtTime(0, t + dur);
+      osc.connect(g); g.connect(masterGain);
+      osc.start(t); osc.stop(t + dur + 0.05);
+    }, i * (100 + Math.random() * 160));
+  }
+}
+
+// ─── Café ─────────────────────────────────────────────────────
+function buildCafe(ctx) {
+  const buf = makeNoiseBuf(ctx, 3);
+
+  // Crowd murmur — stacked bandpass layers simulating voice frequencies
+  [[300, 2.5, 0.24], [750, 1.8, 0.17], [1500, 2.2, 0.09]].forEach(([freq, Q, gain]) => {
+    const src = noiseSrc(ctx, buf);
+    const f   = ctx.createBiquadFilter();
+    f.type = 'bandpass'; f.frequency.value = freq; f.Q.value = Q;
+    const g = ctx.createGain();
+    g.gain.value = gain;
+    src.connect(f); f.connect(g); g.connect(masterGain);
+    src.start(); soundNodes.push(src);
+  });
+
+  // Low room rumble
+  const rumble = noiseSrc(ctx, buf);
+  const lpf    = ctx.createBiquadFilter();
+  lpf.type = 'lowpass'; lpf.frequency.value = 105;
+  const gRumble = ctx.createGain();
+  gRumble.gain.value = 0.26;
+  rumble.connect(lpf); lpf.connect(gRumble); gRumble.connect(masterGain);
+  rumble.start(); soundNodes.push(rumble);
+
+  scheduleClink(ctx);
+}
+
+function scheduleClink(ctx) {
+  if (activeSound !== 'cafe') return;
+  const delay = 4500 + Math.random() * 8000;
+  soundTimers.push(setTimeout(() => {
+    if (activeSound === 'cafe') { clink(ctx); scheduleClink(ctx); }
+  }, delay));
+}
+
+function clink(ctx) {
+  const base = 1900 + Math.random() * 1100;
+  // Three harmonic partials with slight delay stagger for realism
+  [[base, 0], [base * 1.48, 30], [base * 2.12, 55]].forEach(([freq, msDelay]) => {
+    setTimeout(() => {
+      if (activeSound !== 'cafe') return;
+      const osc = ctx.createOscillator();
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      const dur = 0.28 + Math.random() * 0.25;
+      const t   = ctx.currentTime;
+      const g   = ctx.createGain();
+      g.gain.setValueAtTime(0.038, t);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      osc.connect(g); g.connect(masterGain);
+      osc.start(t); osc.stop(t + dur + 0.05);
+    }, msDelay);
+  });
+}
+
+// ─── Focus / Blur ─────────────────────────────────────────────
+document.addEventListener('visibilitychange', () => {
+  if (!audioCtx) return;
+  if (document.hidden) audioCtx.suspend();
+  else if (activeSound) audioCtx.resume();
+});
 </script>
 </body>
 </html>
