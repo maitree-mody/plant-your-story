@@ -538,21 +538,6 @@
   }
   #story-textarea::placeholder { color: rgba(245,237,224,0.3) !important; opacity: 1 !important; }
 
-  /* ─── Nudge ──────────────────────────────────────────────── */
-  .story-nudge {
-    margin-top: 0.6rem;
-    font-family: 'Lora', serif;
-    font-style: italic;
-    font-size: 0.8rem;
-    color: #c8b89a;
-    opacity: 0;
-    transition: opacity 1.2s ease;
-    min-height: 1.2em;
-    pointer-events: none;
-  }
-
-  .story-nudge.visible { opacity: 1; }
-
   /* Restart button */
   .btn-restart {
     border-color: rgba(255,255,255,0.2) !important;
@@ -620,7 +605,6 @@
         <div class="word-count-display">
           <strong id="wc-num">0</strong> words
         </div>
-        <div class="story-nudge" id="story-nudge"></div>
       </div>
 
       <!-- Plant Panel -->
@@ -773,7 +757,6 @@ function onStoryInput() {
   const wc = countWords(text);
   document.getElementById('wc-num').textContent = wc;
   updatePlant(wc);
-  scheduleNudge();
 }
 
 function countWords(text) {
@@ -944,31 +927,6 @@ function soil(o) {
   return `rgba(90, 62, 34, ${o})`;
 }
 
-// ─── Story Nudge ─────────────────────────────────────────────
-const NUDGES = [
-  'what does the room smell like?',
-  'someone knocks on the door.',
-  'what are they afraid to say?',
-  'the light changes.',
-  'what do their hands look like?',
-  'a sound in the distance.',
-  'what are they pretending not to notice?',
-];
-
-let nudgeTimeout = null;
-
-function scheduleNudge() {
-  clearTimeout(nudgeTimeout);
-  // Hide nudge immediately when typing
-  const nudge = document.getElementById('story-nudge');
-  nudge.classList.remove('visible');
-
-  nudgeTimeout = setTimeout(() => {
-    const nudge = document.getElementById('story-nudge');
-    nudge.textContent = NUDGES[Math.floor(Math.random() * NUDGES.length)];
-    nudge.classList.add('visible');
-  }, 120000); // 2 minutes
-}
 
 // ─── Start Over ───────────────────────────────────────────────
 function startOver() {
@@ -982,9 +940,6 @@ function startOver() {
   document.getElementById('story-textarea').value = '';
   document.getElementById('writing-section').classList.remove('visible');
   document.getElementById('wc-num').textContent = '0';
-  // Reset nudge
-  clearTimeout(nudgeTimeout);
-  document.getElementById('story-nudge').classList.remove('visible');
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
