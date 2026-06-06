@@ -604,6 +604,116 @@
     background: rgba(201,123,132,0.1) !important;
   }
 
+  /* ─── Calmly Writer Mode ─────────────────────────────────── */
+
+  /* Full-viewport writing overlay — Van Gogh bg shows through */
+  .writing-section.visible {
+    position: fixed;
+    inset: 0;
+    z-index: 10;
+    overflow-y: auto;
+    display: block;
+  }
+
+  /* Centered single column — no grid */
+  .writing-section.visible .writing-grid {
+    display: block;
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 4rem 2.5rem 8rem;
+  }
+
+  /* Transparent writing panel — zero chrome */
+  .writing-section.visible .writing-panel {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0;
+  }
+
+  /* Seed line — faint inspirational opener above textarea */
+  .writing-seed-line {
+    display: none;
+    font-family: 'Lora', serif;
+    font-style: italic;
+    font-size: 0.92rem;
+    color: rgba(245,237,224,0.3);
+    border-left: 2px solid rgba(212,168,67,0.22);
+    padding-left: 1rem;
+    margin-bottom: 2.5rem;
+    line-height: 1.65;
+  }
+  .writing-section.visible .writing-seed-line { display: block; }
+
+  /* Ghost writing header — invisible until hovered */
+  .writing-section.visible .writing-header {
+    opacity: 0.18;
+    transition: opacity 0.3s;
+    margin-bottom: 1.5rem;
+  }
+  .writing-section.visible .writing-header:hover { opacity: 1; }
+
+  /* Borderless, transparent textarea */
+  .writing-section.visible #story-textarea {
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    min-height: 65vh;
+    font-size: 1.15rem;
+    line-height: 2.1;
+    padding: 0 0 2rem;
+    resize: none;
+    color: rgba(245,237,224,0.88) !important;
+  }
+  .writing-section.visible #story-textarea::placeholder {
+    color: rgba(245,237,224,0.18) !important;
+  }
+
+  /* Word count — ghost pill fixed bottom-centre */
+  .writing-section.visible .word-count-display {
+    position: fixed;
+    bottom: 1.4rem;
+    left: 50%;
+    transform: translateX(-50%);
+    margin: 0;
+    font-size: 0.7rem;
+    opacity: 0.3;
+    white-space: nowrap;
+    z-index: 20;
+    transition: opacity 0.2s;
+    letter-spacing: 0.04em;
+  }
+  .writing-section.visible .word-count-display:hover { opacity: 0.85; }
+
+  /* Plant panel — compact fixed corner widget */
+  .writing-section.visible .plant-panel {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    width: 150px;
+    top: auto;
+    z-index: 20;
+    padding: 0.75rem;
+    background: rgba(0,0,0,0.4) !important;
+    backdrop-filter: blur(18px) !important;
+    -webkit-backdrop-filter: blur(18px) !important;
+    border: 1px solid rgba(255,255,255,0.08) !important;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.4) !important;
+  }
+  .writing-section.visible #plant-svg {
+    width: 110px;
+    height: 140px;
+  }
+
+  /* Restart row — fixed bottom-left */
+  .writing-section.visible .restart-row {
+    position: fixed;
+    bottom: 1.2rem;
+    left: 2rem;
+    margin: 0;
+    z-index: 20;
+  }
+
   /* ─── Focus Mode ─────────────────────────────────────────── */
   header, .settings-panel, .oracle-section {
     transition: opacity 0.4s ease, filter 0.4s ease;
@@ -776,6 +886,7 @@
 
       <!-- Textarea Panel -->
       <div class="writing-panel">
+        <div id="writing-seed-line" class="writing-seed-line"></div>
         <div class="writing-header">
           <div class="section-title" style="margin-bottom:0">Your Story</div>
           <div class="seed-actions" style="margin-top:0">
@@ -959,11 +1070,13 @@ function renderSeedCard(text, mood) {
 function showWritingSection() {
   const section = document.getElementById('writing-section');
   section.classList.add('visible');
-  section.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
   const saved = localStorage.getItem('oracle_story') || '';
   document.getElementById('story-textarea').value = saved;
   updatePlant(countWords(saved));
+
+  // Populate the faint seed line above the textarea
+  document.getElementById('writing-seed-line').textContent = currentSeed || '';
 }
 
 // Fires on every keystroke: persists the story and triggers plant growth.
@@ -1436,8 +1549,8 @@ function startOver() {
   document.getElementById('seed-card-container').innerHTML = '';
   document.getElementById('story-textarea').value = '';
   document.getElementById('writing-section').classList.remove('visible');
+  document.getElementById('writing-seed-line').textContent = '';
   document.getElementById('wc-num').textContent = '0';
-  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 // ─── Utils ────────────────────────────────────────────────────
