@@ -345,21 +345,28 @@
 
     #story-textarea {
       width: 100%;
-      min-height: 280px;
+      min-height: 340px;
       background: var(--cream);
       border: 1.5px solid rgba(196, 154, 108, 0.3);
       border-radius: 12px;
-      padding: 1rem;
+      padding: 1.25rem 1.75rem;
       font-family: 'Lora', serif;
-      font-size: 0.95rem;
-      line-height: 1.8;
+      font-size: 1.05rem;
+      line-height: 2;
       color: var(--ink);
       resize: vertical;
+      caret-color: var(--amber);
       transition: border-color 0.2s;
     }
 
     #story-textarea:focus { outline: none; border-color: var(--amber); }
     #story-textarea::placeholder { color: var(--ink-light); opacity: 0.5; font-style: italic; }
+
+    /* Custom scrollbar */
+    #story-textarea::-webkit-scrollbar { width: 4px; }
+    #story-textarea::-webkit-scrollbar-track { background: transparent; }
+    #story-textarea::-webkit-scrollbar-thumb { background: rgba(196,154,108,0.35); border-radius: 2px; }
+    #story-textarea::-webkit-scrollbar-thumb:hover { background: rgba(212,168,67,0.65); }
 
     .word-count-display {
       margin-top: 0.75rem;
@@ -552,8 +559,12 @@
     background: rgba(0,0,0,0.2) !important;
     border: 1.5px solid rgba(212,168,67,0.3) !important;
     color: #f5ede0 !important;
+    box-shadow: inset 0 0 50px rgba(0,0,0,0.35) !important;
+    caret-color: #c49a6c !important;
   }
   #story-textarea::placeholder { color: rgba(245,237,224,0.3) !important; opacity: 1 !important; }
+  #story-textarea::-webkit-scrollbar-thumb { background: rgba(212,168,67,0.3) !important; }
+  #story-textarea::-webkit-scrollbar-thumb:hover { background: rgba(212,168,67,0.6) !important; }
 
   /* ─── Share Buttons ─────────────────────────────────────── */
   .seed-actions {
@@ -591,6 +602,44 @@
     border-color: var(--blush-deep) !important;
     color: var(--blush) !important;
     background: rgba(201,123,132,0.1) !important;
+  }
+
+  /* ─── Focus Mode ─────────────────────────────────────────── */
+  header, .settings-panel, .oracle-section {
+    transition: opacity 0.4s ease, filter 0.4s ease;
+  }
+  body.focus-mode header,
+  body.focus-mode .settings-panel,
+  body.focus-mode .oracle-section {
+    opacity: 0.08;
+    pointer-events: none;
+  }
+
+  /* ─── Milestone Toast ─────────────────────────────────────── */
+  .milestone-toast {
+    position: fixed;
+    bottom: 2.5rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(0.75rem);
+    background: rgba(212,168,67,0.12);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(212,168,67,0.28);
+    color: #f0e4cc;
+    font-family: 'Lora', serif;
+    font-style: italic;
+    font-size: 0.85rem;
+    padding: 0.55rem 1.5rem;
+    border-radius: 100px;
+    letter-spacing: 0.04em;
+    opacity: 0;
+    transition: opacity 0.4s ease, transform 0.4s ease;
+    pointer-events: none;
+    z-index: 200;
+  }
+  .milestone-toast.visible {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
   }
 
   /* ─── Sound Controls ─────────────────────────────────────── */
@@ -924,10 +973,56 @@ function onStoryInput() {
   const wc = countWords(text);
   document.getElementById('wc-num').textContent = wc;
   updatePlant(wc);
+  typewriterScroll();
 }
 
 function countWords(text) {
   return text.trim() === '' ? 0 : text.trim().split(/\s+/).length;
+}
+
+// ─── Typewriter Mode ──────────────────────────────────────────
+// Estimates the cursor's visual Y position (accounting for wrapped lines)
+// and scrolls the textarea so the cursor stays vertically centred.
+function typewriterScroll() {
+  const ta = document.getElementById('story-textarea');
+  const cs = getComputedStyle(ta);
+  const lineH  = parseFloat(cs.lineHeight);
+  const padTop = parseFloat(cs.paddingTop);
+  const padH   = parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight);
+  const avgCharW = parseFloat(cs.fontSize) * 0.54;
+  const cpl = Math.max(1, Math.floor((ta.clientWidth - padH) / avgCharW));
+
+  const before = ta.value.substring(0, ta.selectionEnd);
+  let visualLines = 0;
+  for (const seg of before.split('\n')) {
+    visualLines += Math.max(1, Math.ceil((seg.length || 0.1) / cpl));
+  }
+
+  ta.scrollTop = padTop + (visualLines - 0.5) * lineH - ta.clientHeight / 2;
+}
+
+// ─── Milestone Toasts ─────────────────────────────────────────
+const STAGE_TOASTS = [
+  null,
+  'first sprout ✦',
+  'leaves unfurling ✦',
+  'growing tall ✦',
+  'a flower blooms ✦',
+  'in full bloom ✦',
+];
+
+function showToast(msg) {
+  const old = document.querySelector('.milestone-toast');
+  if (old) old.remove();
+  const el = document.createElement('div');
+  el.className = 'milestone-toast';
+  el.textContent = msg;
+  document.body.appendChild(el);
+  requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('visible')));
+  setTimeout(() => {
+    el.classList.remove('visible');
+    setTimeout(() => el.remove(), 450);
+  }, 2500);
 }
 
 // ─── Plant SVG ────────────────────────────────────────────────
@@ -963,8 +1058,10 @@ function updatePlant(wc) {
     : `${wc} words — full bloom!`;
 
   if (stage !== currentStage) {
+    const prev = currentStage;
     currentStage = stage;
     drawPlant(stage);
+    if (prev !== -1 && STAGE_TOASTS[stage]) showToast(STAGE_TOASTS[stage]);
   }
 }
 
@@ -1373,6 +1470,17 @@ function escapeHtml(str) {
   });
   const savedMood = localStorage.getItem('oracle_mood') || '';
   if (savedMood) document.getElementById('mood-input').value = savedMood;
+
+  // Focus mode — dim everything except the writing area
+  const ta = document.getElementById('story-textarea');
+  ta.addEventListener('focus', () => document.body.classList.add('focus-mode'));
+  ta.addEventListener('blur',  () => document.body.classList.remove('focus-mode'));
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      document.body.classList.remove('focus-mode');
+      ta.blur();
+    }
+  });
 })();
 
 // ─── Ambient Sound Engine ─────────────────────────────────────
