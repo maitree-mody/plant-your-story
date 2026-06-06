@@ -1017,9 +1017,14 @@ async function plantSeed() {
         temperature: 1.0,
         messages: [{
           role: 'user',
-          content: `You are a literary oracle. Given a mood or vibe, generate exactly ONE opening line for a literary novel.
-The line must be poetic, mysterious, and evocative — like the opening of a Booker Prize winner.
-Under 60 words. No quotation marks. No explanation. Just the line itself.
+          content: `You are a fiction writing assistant. Given a mood or vibe, write exactly ONE opening sentence for a short story or novel.
+
+Rules:
+- Grounded and specific — name a real object, place, action, or person. No vague abstractions.
+- Concrete sensory detail — something you can see, hear, smell, or touch.
+- Emotionally resonant but not melodramatic. Understated is better than flowery.
+- Reads like the first line of a good contemporary novel (think Ottessa Moshfegh, Sally Rooney, Kazuo Ishiguro — not purple prose).
+- Under 40 words. No quotation marks. No explanation. Just the sentence.
 
 Mood / vibe: "${mood}"`,
         }],
